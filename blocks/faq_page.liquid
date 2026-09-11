@@ -1,0 +1,746 @@
+{% doc %}
+  @prompt
+    Create a Shopify page template with collapsible sections (accordion-style) for an FAQ page. Include the following sections:
+    	1.	FAQ
+    	2.	Shipping & Returns
+    3. Terms & Conditions
+    
+    Each section should have a placeholder area for content so the user can fill it in later.
+    When a section heading is clicked, the content should expand below the heading. Other sections should collapse automatically.
+    Use Figtree font for all text.
+    The layout should be clean, modern, responsive, and works well on desktop, mobile browsers, and the Shopify mobile app., make it Figtree Font
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+
+  .ai-faq-accordion-{{ ai_gen_id }} {
+  max-width: 800px;       /* o ano man ang gusto mo */
+  margin: 0 auto;         /* center horizontally */
+  display: block;         /* ensures block-level */
+  text-align: center;     /* centers text inside */
+  }
+
+  .ai-faq-accordion-{{ ai_gen_id }} {
+    font-family: {{ settings.type_body_font.family }}, {{ settings.type_body_font.fallback_families }};
+    font-weight: {{ settings.type_body_font.weight }};
+    max-width: {{ block.settings.max_width }}px;
+    margin: 0 auto;
+    padding: 0px; /* bawasan ito kung sobrang taas */
+    background-color: {{ block.settings.background_color }};
+  }
+
+  .ai-faq-accordion__title-{{ ai_gen_id }} {
+    font-family: {{ settings.type_header_font.family }}, {{ settings.type_header_font.fallback_families }};
+    font-weight: {{ settings.type_header_font.weight }};
+    font-size: {{ block.settings.title_size }}px;
+    color: {{ block.settings.title_color }};
+    text-align: {{ block.settings.title_alignment }};
+    margin-top: 20px;    /* dagdag taas sa itaas ng title */
+    margin-bottom: 40px; /* space sa ilalim ng title */
+    line-height: 1.2;
+  }
+
+  .ai-faq-accordion__item-{{ ai_gen_id }} {
+    border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    margin-bottom: {{ block.settings.item_spacing }}px;
+    overflow: hidden;
+    background-color: {{ block.settings.item_background }};
+    box-shadow: {{ block.settings.shadow_horizontal }}px {{ block.settings.shadow_vertical }}px {{ block.settings.shadow_blur }}px rgba(0, 0, 0, {{ block.settings.shadow_opacity | divided_by: 100.0 }});
+  }
+
+  .ai-faq-accordion__header-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: {{ block.settings.header_padding }}px;
+    cursor: pointer;
+    background-color: {{ block.settings.header_background }};
+    border: none;
+    width: 100%;
+    text-align: left;
+    transition: background-color 0.3s ease;
+  }
+
+  .ai-faq-accordion__header-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.header_hover_background }};
+  }
+
+  .ai-faq-accordion__header-{{ ai_gen_id }}:focus {
+    outline: 2px solid {{ block.settings.focus_color }};
+    outline-offset: 2px;
+  }
+
+  .ai-faq-accordion__header-title-{{ ai_gen_id }} {
+    font-family: {{ settings.type_header_font.family }}, {{ settings.type_header_font.fallback_families }};
+    font-weight: {{ settings.type_header_font.weight }};
+    font-size: {{ block.settings.header_font_size }}px;
+    color: {{ block.settings.header_text_color }};
+    margin: 0;
+    flex-grow: 1;
+    line-height: 1.4;
+  }
+
+  .ai-faq-accordion__icon-{{ ai_gen_id }} {
+    width: {{ block.settings.icon_size }}px;
+    height: {{ block.settings.icon_size }}px;
+    color: {{ block.settings.icon_color }};
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    margin-left: 16px;
+  }
+
+  .ai-faq-accordion__item-{{ ai_gen_id }}.active .ai-faq-accordion__icon-{{ ai_gen_id }} {
+    transform: rotate(180deg);
+  }
+
+  .ai-faq-accordion__content-{{ ai_gen_id }} {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    background-color: {{ block.settings.content_background }};
+  }
+
+  .ai-faq-accordion__content-{{ ai_gen_id }}.active {
+    max-height: 1000px;
+    padding: {{ block.settings.content_padding }}px;
+  }
+
+  .ai-faq-accordion__content-text-{{ ai_gen_id }} {
+    font-family: {{ settings.type_body_font.family }}, {{ settings.type_body_font.fallback_families }};
+    font-weight: {{ settings.type_body_font.weight }};
+    font-size: {{ block.settings.content_font_size }}px;
+    color: {{ block.settings.content_text_color }};
+    line-height: 1.6;
+    margin: 0 0 1em 0;
+    text-align: justify; /* <-- add this */
+    padding: 8px 12px; /* top/bottom 8px, left/right 12px */
+  }
+
+  .ai-faq-accordion__placeholder-{{ ai_gen_id }} {
+    font-family: {{ settings.type_body_font.family }}, {{ settings.type_body_font.fallback_families }};
+    font-weight: {{ settings.type_body_font.weight }};
+    color: {{ block.settings.placeholder_color }};
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+    background-color: {{ block.settings.placeholder_background }};
+    border: 2px dashed {{ block.settings.placeholder_border }};
+    border-radius: {{ block.settings.border_radius }}px;
+    margin: 10px 0;
+  }
+
+  @media screen and (max-width: 768px) {
+    .ai-faq-accordion-{{ ai_gen_id }} {
+      padding: {{ block.settings.section_padding | times: 0.7 }}px;
+    }
+
+    .ai-faq-accordion__title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.title_size | times: 0.85 }}px;
+    }
+
+    .ai-faq-accordion__header-{{ ai_gen_id }} {
+      padding: {{ block.settings.header_padding | times: 0.8 }}px;
+    }
+
+    .ai-faq-accordion__header-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.header_font_size | times: 0.9 }}px;
+    }
+
+    .ai-faq-accordion__content-{{ ai_gen_id }}.active {
+      padding: {{ block.settings.content_padding | times: 0.8 }}px;
+    }
+
+    .ai-faq-accordion__content-text-{{ ai_gen_id }} {
+      font-size: {{ block.settings.content_font_size | times: 0.9 }}px;
+    }
+  }
+{% endstyle %}
+
+<faq-accordion-{{ ai_gen_id }}
+  class="ai-faq-accordion-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  {% if block.settings.section_title != blank %}
+    <h2 class="ai-faq-accordion__title-{{ ai_gen_id }}">{{ block.settings.section_title }}</h2>
+  {% endif %}
+
+  <div class="ai-faq-accordion__item-{{ ai_gen_id }}" data-accordion-item="faq">
+    <button
+      class="ai-faq-accordion__header-{{ ai_gen_id }}"
+      aria-expanded="false"
+      aria-controls="ai-faq-content-{{ ai_gen_id }}-faq"
+      data-accordion-header
+    >
+      <h3 class="ai-faq-accordion__header-title-{{ ai_gen_id }}">{{ block.settings.faq_title }}</h3>
+      <svg class="ai-faq-accordion__icon-{{ ai_gen_id }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6,9 12,15 18,9"></polyline>
+      </svg>
+    </button>
+    <div
+      class="ai-faq-accordion__content-{{ ai_gen_id }}"
+      id="ai-faq-content-{{ ai_gen_id }}-faq"
+      data-accordion-content
+    >
+      <div class="ai-faq-accordion__content-text-{{ ai_gen_id }}">
+        {% if block.settings.faq_content != blank %}
+          {{ block.settings.faq_content }}
+        {% else %}
+          <div class="ai-faq-accordion__placeholder-{{ ai_gen_id }}">
+            Add your FAQ content here. You can include multiple questions and answers, formatting, and links.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="ai-faq-accordion__item-{{ ai_gen_id }}" data-accordion-item="shipping">
+    <button
+      class="ai-faq-accordion__header-{{ ai_gen_id }}"
+      aria-expanded="false"
+      aria-controls="ai-faq-content-{{ ai_gen_id }}-shipping"
+      data-accordion-header
+    >
+      <h3 class="ai-faq-accordion__header-title-{{ ai_gen_id }}">{{ block.settings.shipping_title }}</h3>
+      <svg class="ai-faq-accordion__icon-{{ ai_gen_id }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6,9 12,15 18,9"></polyline>
+      </svg>
+    </button>
+    <div
+      class="ai-faq-accordion__content-{{ ai_gen_id }}"
+      id="ai-faq-content-{{ ai_gen_id }}-shipping"
+      data-accordion-content
+    >
+      <div class="ai-faq-accordion__content-text-{{ ai_gen_id }}">
+        {% if block.settings.shipping_content != blank %}
+          {{ block.settings.shipping_content }}
+        {% else %}
+          <div class="ai-faq-accordion__placeholder-{{ ai_gen_id }}">
+            Add your shipping and returns information here. Include details about shipping times, costs, return policies, and procedures.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="ai-faq-accordion__item-{{ ai_gen_id }}" data-accordion-item="terms">
+    <button
+      class="ai-faq-accordion__header-{{ ai_gen_id }}"
+      aria-expanded="false"
+      aria-controls="ai-faq-content-{{ ai_gen_id }}-terms"
+      data-accordion-header
+    >
+      <h3 class="ai-faq-accordion__header-title-{{ ai_gen_id }}">{{ block.settings.terms_title }}</h3>
+      <svg class="ai-faq-accordion__icon-{{ ai_gen_id }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6,9 12,15 18,9"></polyline>
+      </svg>
+    </button>
+    <div
+      class="ai-faq-accordion__content-{{ ai_gen_id }}"
+      id="ai-faq-content-{{ ai_gen_id }}-terms"
+      data-accordion-content
+    >
+      <div class="ai-faq-accordion__content-text-{{ ai_gen_id }}">
+        {% if block.settings.terms_content != blank %}
+          {{ block.settings.terms_content }}
+        {% else %}
+          <div class="ai-faq-accordion__placeholder-{{ ai_gen_id }}">
+            Add your terms and conditions here. Include legal information, user agreements, privacy policies, and other important terms.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+<div class="ai-faq-accordion__item-{{ ai_gen_id }}" data-accordion-item="any">
+  <button
+    class="ai-faq-accordion__header-{{ ai_gen_id }}"
+    aria-expanded="false"
+    aria-controls="ai-faq-content-{{ ai_gen_id }}-any"
+    data-accordion-header
+  >
+    <h3 class="ai-faq-accordion__header-title-{{ ai_gen_id }}">{{ block.settings.any_section }}</h3>
+    <svg class="ai-faq-accordion__icon-{{ ai_gen_id }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6,9 12,15 18,9"></polyline>
+    </svg>
+  </button>
+  <div
+    class="ai-faq-accordion__content-{{ ai_gen_id }}"
+    id="ai-faq-content-{{ ai_gen_id }}-any"
+    data-accordion-content
+  >
+    <div class="ai-faq-accordion__content-text-{{ ai_gen_id }}">
+      {% if block.settings.any_content != blank %}
+        {{ block.settings.any_content }}
+      {% else %}
+        <div class="ai-faq-accordion__placeholder-{{ ai_gen_id }}">
+          Add your custom content here.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    class FaqAccordion{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.headers = this.querySelectorAll('[data-accordion-header]');
+        this.contents = this.querySelectorAll('[data-accordion-content]');
+        this.items = this.querySelectorAll('[data-accordion-item]');
+        
+        this.setupEventListeners();
+        this.setupKeyboardNavigation();
+      }
+
+      setupEventListeners() {
+        this.headers.forEach((header, index) => {
+          header.addEventListener('click', () => {
+            this.toggleAccordion(index);
+          });
+        });
+      }
+
+      setupKeyboardNavigation() {
+        this.headers.forEach((header, index) => {
+          header.addEventListener('keydown', (event) => {
+            switch (event.key) {
+              case 'ArrowDown':
+                event.preventDefault();
+                this.focusNextHeader(index);
+                break;
+              case 'ArrowUp':
+                event.preventDefault();
+                this.focusPreviousHeader(index);
+                break;
+              case 'Home':
+                event.preventDefault();
+                this.headers[0].focus();
+                break;
+              case 'End':
+                event.preventDefault();
+                this.headers[this.headers.length - 1].focus();
+                break;
+            }
+          });
+        });
+      }
+
+      toggleAccordion(index) {
+        const header = this.headers[index];
+        const content = this.contents[index];
+        const item = this.items[index];
+        const isActive = item.classList.contains('active');
+
+        this.closeAllAccordions();
+
+        if (!isActive) {
+          item.classList.add('active');
+          content.classList.add('active');
+          header.setAttribute('aria-expanded', 'true');
+        }
+      }
+
+      closeAllAccordions() {
+        this.items.forEach((item, index) => {
+          item.classList.remove('active');
+          this.contents[index].classList.remove('active');
+          this.headers[index].setAttribute('aria-expanded', 'false');
+        });
+      }
+
+      focusNextHeader(currentIndex) {
+        const nextIndex = (currentIndex + 1) % this.headers.length;
+        this.headers[nextIndex].focus();
+      }
+
+      focusPreviousHeader(currentIndex) {
+        const previousIndex = currentIndex === 0 ? this.headers.length - 1 : currentIndex - 1;
+        this.headers[previousIndex].focus();
+      }
+    }
+
+    customElements.define('faq-accordion-{{ ai_gen_id }}', FaqAccordion{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "FAQ accordion",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "General settings"
+    },
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Section title",
+      "default": "Frequently Asked Questions"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "min": 600,
+      "max": 1200,
+      "step": 50,
+      "unit": "px",
+      "label": "Maximum width",
+      "default": 800
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 40
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Title style"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Title size",
+      "default": 32
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#121212"
+    },
+    {
+      "type": "select",
+      "id": "title_alignment",
+      "label": "Title alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "title_spacing",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Title bottom spacing",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Accordion items"
+    },
+    {
+      "type": "range",
+      "id": "item_spacing",
+      "min": 5,
+      "max": 30,
+      "step": 5,
+      "unit": "px",
+      "label": "Space between items",
+      "default": 15
+    },
+    {
+      "type": "color",
+      "id": "item_background",
+      "label": "Item background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 1
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#e5e5e5"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Shadow"
+    },
+    {
+      "type": "range",
+      "id": "shadow_horizontal",
+      "min": -10,
+      "max": 10,
+      "step": 1,
+      "unit": "px",
+      "label": "Horizontal offset",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "shadow_vertical",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Vertical offset",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "shadow_blur",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Blur radius",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "shadow_opacity",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "%",
+      "label": "Shadow opacity",
+      "default": 10
+    },
+    {
+      "type": "header",
+      "content": "Header style"
+    },
+    {
+      "type": "range",
+      "id": "header_padding",
+      "min": 10,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Header padding",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "header_background",
+      "label": "Header background",
+      "default": "#f8f8f8"
+    },
+    {
+      "type": "color",
+      "id": "header_hover_background",
+      "label": "Header hover background",
+      "default": "#f0f0f0"
+    },
+    {
+      "type": "range",
+      "id": "header_font_size",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Header font size",
+      "default": 18
+    },
+    {
+      "type": "color",
+      "id": "header_text_color",
+      "label": "Header text color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "focus_color",
+      "label": "Focus outline color",
+      "default": "#334fb4"
+    },
+    {
+      "type": "header",
+      "content": "Icon style"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "min": 16,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon color",
+      "default": "#666666"
+    },
+    {
+      "type": "header",
+      "content": "Content style"
+    },
+    {
+      "type": "range",
+      "id": "content_padding",
+      "min": 10,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Content padding",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "content_background",
+      "label": "Content background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "content_font_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Content font size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "content_text_color",
+      "label": "Content text color",
+      "default": "#666666"
+    },
+    {
+      "type": "header",
+      "content": "Placeholder style"
+    },
+    {
+      "type": "color",
+      "id": "placeholder_color",
+      "label": "Placeholder text color",
+      "default": "#999999"
+    },
+    {
+      "type": "color",
+      "id": "placeholder_background",
+      "label": "Placeholder background",
+      "default": "#f9f9f9"
+    },
+    {
+      "type": "color",
+      "id": "placeholder_border",
+      "label": "Placeholder border color",
+      "default": "#dddddd"
+    },
+    {
+      "type": "header",
+      "content": "FAQ section"
+    },
+    {
+      "type": "text",
+      "id": "faq_title",
+      "label": "FAQ title",
+      "default": "FAQ"
+    },
+    {
+      "type": "richtext",
+      "id": "faq_content",
+      "label": "FAQ content"
+    },
+    {
+      "type": "header",
+      "content": "Shipping section"
+    },
+    {
+      "type": "text",
+      "id": "shipping_title",
+      "label": "Shipping title",
+      "default": "Shipping & Returns"
+    },
+    {
+      "type": "richtext",
+      "id": "shipping_content",
+      "label": "Shipping content"
+    },
+    {
+      "type": "header",
+      "content": "Terms section"
+    },
+    {
+      "type": "text",
+      "id": "terms_title",
+      "label": "Terms title",
+      "default": "Terms & Conditions"
+    },
+    {
+      "type": "richtext",
+      "id": "terms_content",
+      "label": "Terms content"
+    },
+    {
+      "type": "header",
+      "content": "Any Section"
+    },
+    {
+      "type": "text",
+      "id": "any_section",
+      "label": "Any content",
+      "default": "Any Content"
+    },
+    {
+      "type": "richtext",
+      "id": "any_content",
+      "label": "Any content"
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ accordion"
+    }
+  ]
+}
+{% endschema %}

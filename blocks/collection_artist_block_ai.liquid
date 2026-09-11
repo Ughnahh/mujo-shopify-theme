@@ -1,0 +1,909 @@
+{% doc %}
+  @prompt
+    “I want to customize my collection page where i can add collection 10 or more pls add a +button if i add additional collection
+    	•	At the top, keep the Featured Artist Collection section with text (title, description, and artist details).
+    	•	Below that section, I want to add a carousel of collections by artist.
+    	•	Each item in the carousel should include:
+    	1.	A main image.
+    	2.	A hover effect → when I hover over the image, it should change to a second image (like a preview).
+    	3.	The collection title and a short description underneath the image.
+    	4.	When I click the collection, it should link directly to that collection page (so users can shop the products inside).
+    	•	The carousel should be:
+    	•	Swipeable on mobile.
+    	•	Scrollable with arrows or drag on desktop.
+    	•	Everything (images, titles, descriptions, links) should be editable in the theme editor.”
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-collection-carousel-{{ ai_gen_id }} {
+    width: 100%;
+    padding: 40px 0;
+  }
+
+  .ai-collection-carousel__header-{{ ai_gen_id }} {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .ai-collection-carousel__title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.title_size }}px;
+    color: {{ block.settings.title_color }};
+    margin: 0 0 16px;
+  }
+
+  .ai-collection-carousel__description-{{ ai_gen_id }} {
+    font-size: {{ block.settings.description_size }}px;
+    color: {{ block.settings.description_color }};
+    margin: 0 0 20px;
+  }
+
+  .ai-collection-carousel__artist-{{ ai_gen_id }} {
+    font-size: {{ block.settings.artist_size }}px;
+    color: {{ block.settings.artist_color }};
+    font-style: italic;
+    margin: 0;
+  }
+
+  .ai-collection-carousel__container-{{ ai_gen_id }} {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .ai-collection-carousel__wrapper-{{ ai_gen_id }} {
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ai-collection-carousel__track-{{ ai_gen_id }} {
+    display: flex;
+    transition: transform 0.3s ease;
+    gap: 20px;
+  }
+
+  .ai-collection-carousel__item-{{ ai_gen_id }} {
+    flex: 0 0 300px;
+    position: relative;
+  }
+
+  .ai-collection-carousel__image-container-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    cursor: pointer;
+  }
+
+  .ai-collection-carousel__image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.3s ease;
+  }
+
+  .ai-collection-carousel__image-hover-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .ai-collection-carousel__item-{{ ai_gen_id }}:hover .ai-collection-carousel__image-hover-{{ ai_gen_id }} {
+    opacity: 1;
+  }
+
+  .ai-collection-carousel__placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 300px;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: {{ block.settings.image_border_radius }}px;
+  }
+
+  .ai-collection-carousel__placeholder-{{ ai_gen_id }} svg {
+    width: 80px;
+    height: 80px;
+    opacity: 0.5;
+  }
+
+  .ai-collection-carousel__content-{{ ai_gen_id }} {
+    padding: 16px 0;
+    text-align: {{ block.settings.text_alignment }};
+  }
+
+  .ai-collection-carousel__collection-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.collection_title_size }}px;
+    color: {{ block.settings.collection_title_color }};
+    margin: 0 0 8px;
+    text-decoration: none;
+  }
+
+  .ai-collection-carousel__collection-description-{{ ai_gen_id }} {
+    font-size: {{ block.settings.collection_description_size }}px;
+    color: {{ block.settings.collection_description_color }};
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .ai-collection-carousel__nav-{{ ai_gen_id }} {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: {{ block.settings.nav_button_color }};
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: {{ block.settings.nav_button_icon_color }};
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+    z-index: 2;
+  }
+
+  .ai-collection-carousel__nav-{{ ai_gen_id }}:hover {
+    background: {{ block.settings.nav_button_hover_color }};
+  }
+
+  .ai-collection-carousel__nav-{{ ai_gen_id }}:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .ai-collection-carousel__nav--prev-{{ ai_gen_id }} {
+    left: -25px;
+  }
+
+  .ai-collection-carousel__nav--next-{{ ai_gen_id }} {
+    right: -25px;
+  }
+
+  .ai-collection-carousel__nav-{{ ai_gen_id }} svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  @media screen and (max-width: 768px) {
+    .ai-collection-carousel__item-{{ ai_gen_id }} {
+      flex: 0 0 250px;
+    }
+
+    .ai-collection-carousel__nav-{{ ai_gen_id }} {
+      display: none;
+    }
+
+    .ai-collection-carousel__wrapper-{{ ai_gen_id }} {
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .ai-collection-carousel__wrapper-{{ ai_gen_id }}::-webkit-scrollbar {
+      display: none;
+    }
+
+    .ai-collection-carousel__track-{{ ai_gen_id }} {
+      transition: none;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .ai-collection-carousel__item-{{ ai_gen_id }} {
+      flex: 0 0 200px;
+    }
+  }
+{% endstyle %}
+
+<collection-carousel-{{ ai_gen_id }}
+  class="ai-collection-carousel-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-collection-carousel__header-{{ ai_gen_id }}">
+    {% if block.settings.section_title != blank %}
+      <h2 class="ai-collection-carousel__title-{{ ai_gen_id }}">{{ block.settings.section_title }}</h2>
+    {% endif %}
+    {% if block.settings.section_description != blank %}
+      <div class="ai-collection-carousel__description-{{ ai_gen_id }}">{{ block.settings.section_description }}</div>
+    {% endif %}
+    {% if block.settings.artist_details != blank %}
+      <p class="ai-collection-carousel__artist-{{ ai_gen_id }}">{{ block.settings.artist_details }}</p>
+    {% endif %}
+  </div>
+
+  <div class="ai-collection-carousel__container-{{ ai_gen_id }}">
+    <div class="ai-collection-carousel__wrapper-{{ ai_gen_id }}">
+      <div class="ai-collection-carousel__track-{{ ai_gen_id }}" data-track>
+        {% for i in (1..10) %}
+          {% liquid
+            assign collection_key = 'collection_' | append: i
+            assign image_key = 'collection_' | append: i | append: '_image'
+            assign hover_image_key = 'collection_' | append: i | append: '_hover_image'
+            assign title_key = 'collection_' | append: i | append: '_title'
+            assign description_key = 'collection_' | append: i | append: '_description'
+
+            assign collection = block.settings[collection_key]
+            assign custom_image = block.settings[image_key]
+            assign hover_image = block.settings[hover_image_key]
+            assign custom_title = block.settings[title_key]
+            assign custom_description = block.settings[description_key]
+          %}
+
+          {% if collection != blank or custom_image != blank or custom_title != blank %}
+            <div class="ai-collection-carousel__item-{{ ai_gen_id }}">
+              <a href="{% if collection != blank %}{{ collection.url }}{% else %}#{% endif %}" class="ai-collection-carousel__image-container-{{ ai_gen_id }}">
+                {% if custom_image != blank %}
+                  <img
+                    src="{{ custom_image | image_url: width: 400 }}"
+                    alt="{{ custom_image.alt | escape }}"
+                    class="ai-collection-carousel__image-{{ ai_gen_id }}"
+                    loading="lazy"
+                    width="400"
+                    height="400"
+                  >
+                {% elsif collection != blank and collection.featured_image %}
+                  <img
+                    src="{{ collection.featured_image | image_url: width: 400 }}"
+                    alt="{{ collection.featured_image.alt | escape }}"
+                    class="ai-collection-carousel__image-{{ ai_gen_id }}"
+                    loading="lazy"
+                    width="400"
+                    height="400"
+                  >
+                {% else %}
+                  <div class="ai-collection-carousel__placeholder-{{ ai_gen_id }}">
+                    {{ 'collection-1' | placeholder_svg_tag }}
+                  </div>
+                {% endif %}
+
+                {% if hover_image != blank %}
+                  <img
+                    src="{{ hover_image | image_url: width: 400 }}"
+                    alt="{{ hover_image.alt | escape }}"
+                    class="ai-collection-carousel__image-hover-{{ ai_gen_id }}"
+                    loading="lazy"
+                    width="400"
+                    height="400"
+                  >
+                {% endif %}
+              </a>
+
+              <div class="ai-collection-carousel__content-{{ ai_gen_id }}">
+                {% assign display_title = custom_title | default: collection.title %}
+                {% if display_title != blank %}
+                  <h3 class="ai-collection-carousel__collection-title-{{ ai_gen_id }}">
+                    {{ display_title }}
+                  </h3>
+                {% endif %}
+
+                {% assign display_description = custom_description | default: collection.description %}
+                {% if display_description != blank %}
+                  <p class="ai-collection-carousel__collection-description-{{ ai_gen_id }}">
+                    {{ display_description | truncate: 100 }}
+                  </p>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <button
+      class="ai-collection-carousel__nav-{{ ai_gen_id }} ai-collection-carousel__nav--prev-{{ ai_gen_id }}"
+      data-prev
+      aria-label="Previous collections"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15,18 9,12 15,6"></polyline>
+      </svg>
+    </button>
+
+    <button
+      class="ai-collection-carousel__nav-{{ ai_gen_id }} ai-collection-carousel__nav--next-{{ ai_gen_id }}"
+      data-next
+      aria-label="Next collections"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9,18 15,12 9,6"></polyline>
+      </svg>
+    </button>
+  </div>
+</collection-carousel-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class CollectionCarousel{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.currentIndex = 0;
+        this.itemWidth = 320;
+        this.visibleItems = 3;
+      }
+
+      connectedCallback() {
+        this.track = this.querySelector('[data-track]');
+        this.prevBtn = this.querySelector('[data-prev]');
+        this.nextBtn = this.querySelector('[data-next]');
+        this.items = this.querySelectorAll('.ai-collection-carousel__item-{{ ai_gen_id }}');
+
+        if (this.items.length === 0) return;
+
+        this.setupCarousel();
+        this.setupEventListeners();
+        this.updateButtons();
+      }
+
+      setupCarousel() {
+        this.updateVisibleItems();
+        this.maxIndex = Math.max(0, this.items.length - this.visibleItems);
+      }
+
+      updateVisibleItems() {
+        const containerWidth = this.offsetWidth;
+        if (containerWidth <= 480) {
+          this.visibleItems = 1;
+          this.itemWidth = 220;
+        } else if (containerWidth <= 768) {
+          this.visibleItems = 2;
+          this.itemWidth = 270;
+        } else if (containerWidth <= 1024) {
+          this.visibleItems = 3;
+          this.itemWidth = 320;
+        } else {
+          this.visibleItems = 4;
+          this.itemWidth = 320;
+        }
+        this.maxIndex = Math.max(0, this.items.length - this.visibleItems);
+      }
+
+      setupEventListeners() {
+        this.prevBtn.addEventListener('click', () => this.prev());
+        this.nextBtn.addEventListener('click', () => this.next());
+
+        window.addEventListener('resize', () => {
+          this.updateVisibleItems();
+          this.currentIndex = Math.min(this.currentIndex, this.maxIndex);
+          this.updateCarousel();
+          this.updateButtons();
+        });
+
+        let startX = 0;
+        let isDragging = false;
+
+        this.track.addEventListener('mousedown', (e) => {
+          if (window.innerWidth <= 768) return;
+          isDragging = true;
+          startX = e.clientX;
+          this.track.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          if (!isDragging || window.innerWidth <= 768) return;
+          e.preventDefault();
+          const diff = startX - e.clientX;
+          if (Math.abs(diff) > 50) {
+            if (diff > 0) {
+              this.next();
+            } else {
+              this.prev();
+            }
+            isDragging = false;
+            this.track.style.cursor = 'grab';
+          }
+        });
+
+        document.addEventListener('mouseup', () => {
+          isDragging = false;
+          this.track.style.cursor = 'grab';
+        });
+      }
+
+      prev() {
+        if (this.currentIndex > 0) {
+          this.currentIndex--;
+          this.updateCarousel();
+          this.updateButtons();
+        }
+      }
+
+      next() {
+        if (this.currentIndex < this.maxIndex) {
+          this.currentIndex++;
+          this.updateCarousel();
+          this.updateButtons();
+        }
+      }
+
+      updateCarousel() {
+        if (window.innerWidth <= 768) return;
+        const translateX = -this.currentIndex * this.itemWidth;
+        this.track.style.transform = `translateX(${translateX}px)`;
+      }
+
+      updateButtons() {
+        this.prevBtn.disabled = this.currentIndex === 0;
+        this.nextBtn.disabled = this.currentIndex >= this.maxIndex;
+      }
+    }
+
+    customElements.define('collection-carousel-{{ ai_gen_id }}', CollectionCarousel{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Collection carousel",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Featured artist section"
+    },
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Title",
+      "default": "Featured Artist Collections"
+    },
+    {
+      "type": "textarea",
+      "id": "section_description",
+      "label": "Description",
+      "default": "Discover our curated collections from talented artists around the world."
+    },
+    {
+      "type": "text",
+      "id": "artist_details",
+      "label": "Artist details",
+      "default": "By Artist Name"
+    },
+    {
+      "type": "header",
+      "content": "Header style"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Title size",
+      "default": 32
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Description size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "description_color",
+      "label": "Description color",
+      "default": "#666666"
+    },
+    {
+      "type": "range",
+      "id": "artist_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Artist details size",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "artist_color",
+      "label": "Artist details color",
+      "default": "#888888"
+    },
+    {
+      "type": "header",
+      "content": "Collection items style"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Image border radius",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "collection_title_size",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Collection title size",
+      "default": 18
+    },
+    {
+      "type": "color",
+      "id": "collection_title_color",
+      "label": "Collection title color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "collection_description_size",
+      "min": 12,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Collection description size",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "collection_description_color",
+      "label": "Collection description color",
+      "default": "#666666"
+    },
+    {
+      "type": "header",
+      "content": "Navigation buttons"
+    },
+    {
+      "type": "color",
+      "id": "nav_button_color",
+      "label": "Button color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "nav_button_hover_color",
+      "label": "Button hover color",
+      "default": "#f0f0f0"
+    },
+    {
+      "type": "color",
+      "id": "nav_button_icon_color",
+      "label": "Button icon color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Collection 1"
+    },
+    {
+      "type": "collection",
+      "id": "collection_1",
+      "label": "Collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_1_image",
+      "label": "Custom image"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_1_hover_image",
+      "label": "Hover image"
+    },
+    {
+      "type": "text",
+      "id": "collection_1_title",
+      "label": "Custom title"
+    },
+    {
+      "type": "textarea",
+      "id": "collection_1_description",
+      "label": "Custom description"
+    },
+    {
+      "type": "header",
+      "content": "Collection 2"
+    },
+    {
+      "type": "collection",
+      "id": "collection_2",
+      "label": "Collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_2_image",
+      "label": "Custom image"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_2_hover_image",
+      "label": "Hover image"
+    },
+    {
+      "type": "text",
+      "id": "collection_2_title",
+      "label": "Custom title"
+    },
+    {
+      "type": "textarea",
+      "id": "collection_2_description",
+      "label": "Custom description"
+    },
+    {
+      "type": "header",
+      "content": "Collection 3"
+    },
+    {
+      "type": "collection",
+      "id": "collection_3",
+      "label": "Collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_3_image",
+      "label": "Custom image"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_3_hover_image",
+      "label": "Hover image"
+    },
+    {
+      "type": "text",
+      "id": "collection_3_title",
+      "label": "Custom title"
+    },
+    {
+      "type": "textarea",
+      "id": "collection_3_description",
+      "label": "Custom description"
+    },
+    {
+      "type": "header",
+      "content": "Collection 4"
+    },
+    {
+      "type": "collection",
+      "id": "collection_4",
+      "label": "Collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_4_image",
+      "label": "Custom image"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_4_hover_image",
+      "label": "Hover image"
+    },
+    {
+      "type": "text",
+      "id": "collection_4_title",
+      "label": "Custom title"
+    },
+    {
+      "type": "textarea",
+      "id": "collection_4_description",
+      "label": "Custom description"
+    },
+    {
+      "type": "header",
+      "content": "Collection 5"
+    },
+    {
+      "type": "collection",
+      "id": "collection_5",
+      "label": "Collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_5_image",
+      "label": "Custom image"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_5_hover_image",
+      "label": "Hover image"
+    },
+    {
+      "type": "text",
+      "id": "collection_5_title",
+      "label": "Custom title"
+    },
+    {
+      "type": "textarea",
+      "id": "collection_5_description",
+      "label": "Custom description"
+    },
+    {
+      "type": "header",
+      "content": "Collection 6"
+    },
+    {
+      "type": "collection",
+      "id": "collection_6",
+      "label": "Collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_6_image",
+      "label": "Custom image"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_6_hover_image",
+      "label": "Hover image"
+    },
+    {
+      "type": "text",
+      "id": "collection_6_title",
+      "label": "Custom title"
+    },
+    {
+      "type": "textarea",
+      "id": "collection_6_description",
+      "label": "Custom description"
+    },
+    {
+      "type": "header",
+      "content": "Collection 7"
+    },
+    {
+      "type": "collection",
+      "id": "collection_7",
+      "label": "Collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_7_image",
+      "label": "Custom image"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_7_hover_image",
+      "label": "Hover image"
+    },
+    {
+      "type": "text",
+      "id": "collection_7_title",
+      "label": "Custom title"
+    },
+    {
+      "type": "textarea",
+      "id": "collection_7_description",
+      "label": "Custom description"
+    },
+    {
+      "type": "header",
+      "content": "Collection 8"
+    },
+    {
+      "type": "collection",
+      "id": "collection_8",
+      "label": "Collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_8_image",
+      "label": "Custom image"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_8_hover_image",
+      "label": "Hover image"
+    },
+    {
+      "type": "text",
+      "id": "collection_8_title",
+      "label": "Custom title"
+    },
+    {
+      "type": "textarea",
+      "id": "collection_8_description",
+      "label": "Custom description"
+    },
+    {
+      "type": "header",
+      "content": "Collection 9"
+    },
+    {
+      "type": "collection",
+      "id": "collection_9",
+      "label": "Collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_9_image",
+      "label": "Custom image"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_9_hover_image",
+      "label": "Hover image"
+    },
+    {
+      "type": "text",
+      "id": "collection_9_title",
+      "label": "Custom title"
+    },
+    {
+      "type": "textarea",
+      "id": "collection_9_description",
+      "label": "Custom description"
+    },
+    {
+      "type": "header",
+      "content": "Collection 10"
+    },
+    {
+      "type": "collection",
+      "id": "collection_10",
+      "label": "Collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_10_image",
+      "label": "Custom image"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_10_hover_image",
+      "label": "Hover image"
+    },
+    {
+      "type": "text",
+      "id": "collection_10_title",
+      "label": "Custom title"
+    },
+    {
+      "type": "textarea",
+      "id": "collection_10_description",
+      "label": "Custom description"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection carousel"
+    }
+  ]
+}
+{% endschema %}

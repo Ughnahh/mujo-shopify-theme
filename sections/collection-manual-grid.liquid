@@ -1,0 +1,336 @@
+{{ 'template-collection.css' | asset_url | stylesheet_tag }}
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }} {
+    padding-top: 24px;
+    padding-bottom: 40px;
+  }
+
+  .manual-toolbar-{{ section.id }} {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    align-items: center;
+  }
+
+  .manual-filters-{{ section.id }} {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .manual-filters-{{ section.id }} label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .manual-sort-{{ section.id }} {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 14px;
+  }
+
+  .manual-sort-{{ section.id }} select {
+    min-width: 200px;
+    padding: 4px 8px;
+    font-size: 14px;
+  }
+
+  .manual-toolbar-{{ section.id }} span.label {
+    font-weight: 600;
+    font-size: 14px;
+  }
+{%- endstyle -%}
+
+<div class="section-{{ section.id }}">
+
+  {%- paginate collection.products by section.settings.products_per_page -%}
+    <div class="page-width">
+
+      <!-- FILTER + SORT BAR -->
+      <div class="manual-toolbar-{{ section.id }}">
+        {%- comment -%}
+        <div class="manual-filters-{{ section.id }}">
+          <span class="label">Type:</span>
+
+          <label>
+            <input type="checkbox" data-type-filter value="necklace" unchecked>
+            Necklace
+          </label>
+
+          <label>
+            <input type="checkbox" data-type-filter value="ring" unchecked>
+            Ring
+          </label>
+
+          <label>
+            <input type="checkbox" data-type-filter value="bracelet" unchecked>
+            Bracelet
+          </label>
+                    <label>
+            <input type="checkbox" data-type-filter value="earrings" unchecked>
+            Earrings
+          </label>
+        </div>
+        {%- endcomment -%}
+
+        <div class="manual-sort-{{ section.id }}">
+          <span class="label">Sort by:</span>
+          <select data-sort-control>
+            <option value="default">Default order</option>
+            <option value="date_desc">Release Date: Newest first</option>
+            <option value="date_asc">Release Date: Oldest first</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- PRODUCT GRID -->
+      <ul
+        id="product-grid-{{ section.id }}"
+        class="
+          grid product-grid
+          grid--{{ section.settings.columns_mobile }}-col-tablet-down
+          grid--{{ section.settings.columns_desktop }}-col-desktop
+        "
+      >
+        {% assign skip_card_product_styles = false %}
+
+        {%- for product in collection.products -%}
+          {% comment %}
+            Derive a simple type for filtering based on product.type text.
+            If product type contains 'necklace', 'ring', or 'bracelet'
+            (case-insensitive), we map it. Otherwise, 'other'.
+          {% endcomment %}
+          {% assign lower_type = product.type | downcase %}
+          {% assign data_type = 'other' %}
+          {% if lower_type contains 'necklace' %}
+            {% assign data_type = 'necklace' %}
+          {% elsif lower_type contains 'ring' %}
+            {% assign data_type = 'ring' %}
+          {% elsif lower_type contains 'bracelet' %}
+            {% assign data_type = 'bracelet' %}
+          {% endif %}
+
+          <li
+            class="grid__item"
+            data-product-item
+            data-type="{{ data_type }}"
+            data-date="{{ product.published_at | default: product.created_at | date: '%s' }}"
+            data-price="{{ product.price | divided_by: 100.0 }}"
+            data-index="{{ forloop.index0 }}"
+          >
+            {% render 'card-product',
+              card_product: product,
+              media_aspect_ratio: section.settings.image_ratio,
+              image_shape: section.settings.image_shape,
+              show_secondary_image: section.settings.show_secondary_image,
+              show_vendor: section.settings.show_vendor,
+              show_rating: section.settings.show_rating,
+              lazy_load: forloop.index > 2,
+              skip_styles: skip_card_product_styles,
+              quick_add: section.settings.quick_add,
+              section_id: section.id
+            %}
+          </li>
+          {% assign skip_card_product_styles = true %}
+        {%- endfor -%}
+      </ul>
+
+      {% render 'pagination', paginate: paginate %}
+    </div>
+  {%- endpaginate -%}
+
+</div>
+
+<script>
+window.addEventListener('load', function() {
+  // Get this section's grid
+  var grid = document.getElementById('product-grid-{{ section.id }}');
+  if (!grid) return;
+
+  var section = grid.closest('.section-{{ section.id }}') || document;
+  var items = Array.from(grid.querySelectorAll('[data-product-item]'));
+  if (!items.length) return;
+
+  var typeCheckboxes = section.querySelectorAll('input[data-type-filter]');
+  var sortSelect = section.querySelector('select[data-sort-control]');
+
+  function applyFilterAndSort() {
+    // 1) TYPE FILTER
+    var activeTypes = Array.from(typeCheckboxes)
+      .filter(function(cb) { return cb.checked; })
+      .map(function(cb) { return cb.value; });
+
+    items.forEach(function(item) {
+      var type = item.getAttribute('data-type') || 'other';
+
+      if (!activeTypes.length) {
+        // If user unchecks everything, show ALL again (safer)
+        item.style.display = '';
+      } else {
+        if (activeTypes.indexOf(type) !== -1) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      }
+    });
+
+    // 2) SORT
+    var sortValue = sortSelect ? sortSelect.value : 'default';
+
+    var visibleItems = items.filter(function(item) {
+      return item.style.display !== 'none';
+    });
+
+    visibleItems.sort(function(a, b) {
+      var indexA = parseInt(a.getAttribute('data-index') || '0', 10);
+      var indexB = parseInt(b.getAttribute('data-index') || '0', 10);
+
+      if (sortValue === 'date_desc' || sortValue === 'date_asc') {
+        var dateA = parseInt(a.getAttribute('data-date') || '0', 10);
+        var dateB = parseInt(b.getAttribute('data-date') || '0', 10);
+        if (sortValue === 'date_desc') {
+          return dateB - dateA; // newest first
+        } else {
+          return dateA - dateB; // oldest first
+        }
+      }
+
+      if (sortValue === 'price_asc' || sortValue === 'price_desc') {
+        var priceA = parseFloat(a.getAttribute('data-price') || '0');
+        var priceB = parseFloat(b.getAttribute('data-price') || '0');
+        if (sortValue === 'price_asc') {
+          return priceA - priceB; // low to high
+        } else {
+          return priceB - priceA; // high to low
+        }
+      }
+
+      // default: original order
+      return indexA - indexB;
+    });
+
+    visibleItems.forEach(function(item) {
+      grid.appendChild(item);
+    });
+  }
+
+  // Bind events
+  typeCheckboxes.forEach(function(cb) {
+    cb.addEventListener('change', applyFilterAndSort);
+  });
+
+  if (sortSelect) {
+    sortSelect.addEventListener('change', applyFilterAndSort);
+  }
+
+  // Initial run so filters/sort apply on load
+  applyFilterAndSort();
+});
+</script>
+
+{% schema %}
+{
+  "name": "Collection Filter Grid",
+  "class": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 4,
+      "max": 48,
+      "step": 4,
+      "default": 16,
+      "label": "Products per page"
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "default": "4",
+      "label": "Desktop columns",
+      "options": [
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" },
+        { "value": "5", "label": "5" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "default": "2",
+      "label": "Mobile columns",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "default": "square",
+      "label": "Image ratio",
+      "options": [
+        { "value": "adapt", "label": "Adapt to image" },
+        { "value": "square", "label": "Square" },
+        { "value": "portrait", "label": "Portrait" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_shape",
+      "default": "default",
+      "label": "Image shape",
+      "options": [
+        { "value": "default", "label": "Default" },
+        { "value": "round", "label": "Round" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "default": false,
+      "label": "Show second image on hover"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "default": false,
+      "label": "Show vendor"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "default": false,
+      "label": "Show rating (app required)"
+    },
+    {
+      "type": "select",
+      "id": "quick_add",
+      "default": "none",
+      "label": "Quick add",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "standard", "label": "Standard" },
+        { "value": "bulk", "label": "Bulk" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection Filter Grid"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,1085 @@
+{% doc %}
+  @prompt
+    Build me a modern, mobile-friendly Shopify footer with multiple editable containers.
+    
+    General Requirements:
+    	•	The footer must be responsive and display correctly on all devices (desktop, tablet, and mobile).
+    	•	Each container must allow me to adjust padding (top, bottom, left, right).
+    	•	Each container can be toggled on/off.
+    	•	Clean, minimal, professional design.
+    
+    Container 1 (Accordion, Left Side):
+    	•	Accordion with + icon when closed and – icon when open.
+    	•	Titles and inner content must be editable (example: “About” → About Us + Privacy Policy; “Support” → FAQs + Contact Us).
+    	•	I must be able to add, remove, or edit accordion items in the future.
+    	•	Smooth open/close animation.
+    
+    Container 2 (Center):
+    	•	Newsletter signup form (editable text + input field + submit button).
+    	•	Entire section can be toggled on/off.
+    
+    Container 3 (Center):
+    	•	Social media icons (Facebook, Instagram, TikTok, etc.) with editable links.
+    	•	Ability to add or remove icons in the future.
+    	•	Toggleable on/off.
+    
+    Container 4 (Bottom, Center):
+    	•	Copyright text (default: “© 2025, MUJŌ CO”) but must be editable.
+    
+    Extra Notes:
+    	•	All text, links, and content must be editable inside Shopify.
+    	•	Fully responsive and works seamlessly across desktop, tablet, and mobile., Create a modern, responsive Shopify footer with editable containers. Each container must have padding controls (top, bottom, left, right) and an on/off toggle.
+    
+    Container 1 (Accordion Section, Left Side):
+    	•	Accordion with + (closed) and – (open) icons.
+    	•	Each accordion item must be fully editable (title + inside content).
+    	•	I can link items directly to Shopify pages (About Us, Privacy Policy, FAQs, Contact Us, etc.).
+    	•	Ability to add/remove accordion items in the future.
+    
+    Container 2 (Newsletter, Center, Toggle On/Off):
+    	•	Editable title and description.
+    	•	Newsletter signup form (email input + submit button).
+    
+    Container 3 (Social Media, Center, Toggle On/Off):
+    	•	Use the default Shopify social icons (like the ones in my theme: Facebook, Instagram, TikTok, etc.).
+    	•	Each icon must be clickable and link to my social media profiles.
+    	•	Ability to add/remove icons in the future.
+    
+    Container 4 (Bottom, Center):
+    	•	Editable copyright text (default: “© 2025, MUJŌ CO”).
+    
+    Requirements:
+    	•	Fully responsive on desktop, tablet, and mobile.
+    	•	Clean, minimal, modern design.
+    	•	Smooth accordion animation.
+    	•	All content editable directly in Shopify., Create a modern, responsive Shopify footer with editable containers. Each container must have padding controls (top, bottom, left, right) and an on/off toggle.
+    
+    Container 1 (Accordion Section, Left Side):
+    	•	Accordion with + (closed) and – (open) icons.
+    	•	Each accordion item must be fully editable (title + inside content).
+    	•	I can link items directly to Shopify pages (About Us, Privacy Policy, FAQs, Contact Us, etc.).
+    	•	Ability to add/remove accordion items in the future.
+    
+    Container 2 (Newsletter, Center, Toggle On/Off):
+    	•	Editable title and description.
+    	•	Newsletter signup form (email input + submit button).
+    
+    Container 3 (Social Media, Center, Toggle On/Off):
+    	•	Use the default generic Shopify social media icons (Facebook, Instagram, TikTok, etc.).
+    	•	Each icon must allow me to add my own link.
+    	•	Ability to add/remove icons in the future.
+    
+    Container 4 (Bottom, Center):
+    	•	Editable copyright text (default: “© 2025, MUJŌ CO”).
+    
+    Requirements:
+    	•	Fully responsive on desktop, tablet, and mobile.
+    	•	Clean, minimal, modern design.
+    	•	Smooth accordion animation.
+    	•	All content editable directly in Shopify.
+    
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-footer-inner-{{ ai_gen_id }} {
+    max-width: 9600px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .ai-footer-{{ ai_gen_id }} {
+    width: 100%;
+    background-color: {{ block.settings.footer_background_color }};
+    color: {{ block.settings.footer_text_color }};
+    font-family: "Figtree", sans-serif;
+    font-weight: {{ settings.type_body_font.weight }};
+  }
+
+  .ai-footer-main-{{ ai_gen_id }} {
+    gap: 20px; /* reduce vertical space between accordion and newsletter */
+  }
+
+  .ai-footer-accordion-container-{{ ai_gen_id }},
+  .ai-footer-newsletter-container-{{ ai_gen_id }} {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+
+  @media (min-width: 1024px) {
+    .ai-footer-accordion-container-{{ ai_gen_id }} {
+      grid-column: 1 / -1;  /* span across all columns */
+      width: 100%;          /* take up the whole row */
+    }
+  }
+
+  .ai-footer-accordion-item-{{ ai_gen_id }} {
+    border-bottom: 1px solid rgba({{ block.settings.footer_text_color | color_extract: 'red' }}, {{ block.settings.footer_text_color | color_extract: 'green' }}, {{ block.settings.footer_text_color | color_extract: 'blue' }}, 0.2);
+    margin-bottom: 16px;
+  }
+
+  .ai-footer-accordion-header-{{ ai_gen_id }} {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    color: inherit;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .ai-footer-accordion-icon-{{ ai_gen_id }} {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+  }
+
+  .ai-footer-accordion-icon-{{ ai_gen_id }}.active {
+    transform: rotate(45deg);
+  }
+
+  .ai-footer-accordion-content-{{ ai_gen_id }} {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .ai-footer-accordion-content-{{ ai_gen_id }}.active {
+    max-height: 500px;
+  }
+
+  .ai-footer-accordion-links-{{ ai_gen_id }} {
+    padding-bottom: 16px;
+  }
+
+  .ai-footer-accordion-link-{{ ai_gen_id }} {
+    display: block;
+    color: {{ block.settings.footer_text_color }};
+    text-decoration: none;
+    padding: 8px 0;
+    font-size: 14px;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+  }
+
+  .ai-footer-accordion-link-{{ ai_gen_id }}:hover {
+    opacity: 1;
+  }
+
+  .ai-footer-newsletter-container-{{ ai_gen_id }} {
+    grid-column: 1 / -1; /* Makes newsletter span full width row */
+    order: 2;            /* Forces it to appear after accordion */
+    text-align: center;
+  }
+
+  .ai-footer-newsletter-title-{{ ai_gen_id }} {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: {{ block.settings.footer_text_color }};
+  }
+
+  .ai-footer-newsletter-description-{{ ai_gen_id }} {
+    font-size: 14px;
+    margin-bottom: 20px;
+    opacity: 0.8;
+    line-height: 1.5;
+  }
+
+  .ai-footer-newsletter-form-{{ ai_gen_id }} {
+    display: flex;
+    gap: 8px;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .ai-footer-newsletter-input-{{ ai_gen_id }} {
+    flex: 1;
+    padding: 10px 12px;
+    border: {{ settings.inputs_border_thickness }}px solid rgba({{ block.settings.footer_text_color | color_extract: 'red' }}, {{ block.settings.footer_text_color | color_extract: 'green' }}, {{ block.settings.footer_text_color | color_extract: 'blue' }}, {{ settings.inputs_border_opacity | divided_by: 100.0 }});
+    border-radius: {{ settings.inputs_radius }}px;
+    background-color: {{ block.settings.footer_background_color }};
+    color: {{ block.settings.footer_text_color }};
+    font-size: 14px;
+  }
+
+  .ai-footer-newsletter-input-{{ ai_gen_id }}::placeholder {
+    color:rgba(255, 255, 255, 0.7);
+    text-align: center;
+  }
+
+  .ai-footer-newsletter-button-{{ ai_gen_id }} {
+    padding: 10px 12px;
+    background-color: {{ block.settings.newsletter_button_color }};
+    color: {{ block.settings.newsletter_button_text_color }};
+    border: none;
+    border-radius: {{ settings.buttons_radius }}px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+
+  .ai-footer-newsletter-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.newsletter_button_hover_color }};
+  }
+
+  .ai-footer-newsletter-message-{{ ai_gen_id }} {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .ai-footer-newsletter-success-{{ ai_gen_id }} {
+    color: #10b981;
+  }
+
+  .ai-footer-newsletter-error-{{ ai_gen_id }} {
+    color: #ef4444;
+  }
+
+  .ai-footer-social-container-{{ ai_gen_id }} {
+    padding: {{ block.settings.social_padding_top }}px {{ block.settings.social_padding_right }}px {{ block.settings.social_padding_bottom }}px {{ block.settings.social_padding_left }}px;
+    text-align: center;
+  }
+
+  .ai-footer-social-icons-{{ ai_gen_id }} {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .ai-footer-social-icon-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    color: {{ block.settings.footer_text_color }};
+    text-decoration: none;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0.8;
+  }
+
+  .ai-footer-social-icon-{{ ai_gen_id }}:hover {
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+
+  .ai-footer-social-icon-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .ai-footer-copyright-container-{{ ai_gen_id }} {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    text-align: center;
+    border-top: 1px solid rgba({{ block.settings.footer_text_color | color_extract: 'red' }}, {{ block.settings.footer_text_color | color_extract: 'green' }}, {{ block.settings.footer_text_color | color_extract: 'blue' }}, 0.2);
+    margin-top: 0px;
+  }
+
+  .ai-footer-copyright-text-{{ ai_gen_id }} {
+    font-size: 14px;
+    opacity: 0.7;
+  }
+
+  @media screen and (max-width: 990px) {
+    .ai-footer-main-{{ ai_gen_id }} {
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .ai-footer-accordion-container-{{ ai_gen_id }} {
+      grid-column: 1 / -1;
+      order: 3;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-footer-main-{{ ai_gen_id }} {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+
+    .ai-footer-newsletter-form-{{ ai_gen_id }} {
+      flex-direction: column;
+      max-width: 100%;
+    }
+
+    .ai-footer-social-icons-{{ ai_gen_id }} {
+      gap: 12px;
+    }
+
+    .ai-footer-accordion-container-{{ ai_gen_id }} {
+      order: 1;
+    }
+
+    .ai-footer-newsletter-container-{{ ai_gen_id }} {
+      order: 2;
+    }
+
+    .ai-footer-social-container-{{ ai_gen_id }} {
+      order: 3;
+    }
+  }
+{% endstyle %}
+
+<footer-accordion-{{ ai_gen_id }} class="ai-footer-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-footer-container-{{ ai_gen_id }}">
+    
+    <!-- 🟢 New wrapper for centering content -->
+    <div class="ai-footer-inner-{{ ai_gen_id }}">
+    <div class="ai-footer-main-{{ ai_gen_id }}">
+      {% if block.settings.show_accordion %}
+        <div class="ai-footer-accordion-container-{{ ai_gen_id }}">
+          {% for i in (1..6) %}
+            {% liquid
+              assign accordion_enabled_key = 'accordion_' | append: i | append: '_enabled'
+              assign accordion_title_key = 'accordion_' | append: i | append: '_title'
+              assign accordion_enabled = block.settings[accordion_enabled_key]
+              assign accordion_title = block.settings[accordion_title_key]
+            %}
+
+            {% if accordion_enabled and accordion_title != blank %}
+              <div class="ai-footer-accordion-item-{{ ai_gen_id }}">
+                <button
+                  class="ai-footer-accordion-header-{{ ai_gen_id }}"
+                  aria-expanded="false"
+                  data-accordion-toggle="{{ i }}"
+                >
+                  <span>{{ accordion_title }}</span>
+                  <svg class="ai-footer-accordion-icon-{{ ai_gen_id }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+                <div class="ai-footer-accordion-content-{{ ai_gen_id }}" data-accordion-content="{{ i }}">
+                  <div class="ai-footer-accordion-links-{{ ai_gen_id }}">
+                    {% for j in (1..4) %}
+                      {% liquid
+                        assign page_key = 'accordion_' | append: i | append: '_page_' | append: j
+                        assign page = block.settings[page_key]
+                      %}
+                      {% if page != blank %}
+                        <a href="{{ page.url }}" class="ai-footer-accordion-link-{{ ai_gen_id }}">
+                          {{ page.title }}
+                        </a>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if block.settings.show_newsletter %}
+        <div class="ai-footer-newsletter-container-{{ ai_gen_id }}">
+          {% if block.settings.newsletter_title != blank %}
+            <h3 class="ai-footer-newsletter-title-{{ ai_gen_id }}">{{ block.settings.newsletter_title }}</h3>
+          {% endif %}
+          {% if block.settings.newsletter_description != blank %}
+            <p class="ai-footer-newsletter-description-{{ ai_gen_id }}">{{ block.settings.newsletter_description }}</p>
+          {% endif %}
+          
+          {% form 'customer' %}
+            <input type="hidden" name="contact[tags]" value="newsletter">
+            <div class="ai-footer-newsletter-form-{{ ai_gen_id }}">
+              <input
+                type="email"
+                name="contact[email]"
+                class="ai-footer-newsletter-input-{{ ai_gen_id }}"
+                placeholder="{{ block.settings.newsletter_placeholder }}"
+                value="{{ form.email }}"
+                aria-required="true"
+                autocorrect="off"
+                autocapitalize="off"
+                autocomplete="email"
+                {% if form.errors %}
+                  aria-invalid="true"
+                  aria-describedby="ai-footer-newsletter-error-{{ ai_gen_id }}"
+                {% endif %}
+                {% if form.posted_successfully? %}
+                  aria-describedby="ai-footer-newsletter-success-{{ ai_gen_id }}"
+                {% endif %}
+                required
+              >
+              <button type="submit" class="ai-footer-newsletter-button-{{ ai_gen_id }}">
+                {{ block.settings.newsletter_button_text }}
+              </button>
+            </div>
+            {% if form.errors %}
+              <div id="ai-footer-newsletter-error-{{ ai_gen_id }}" class="ai-footer-newsletter-message-{{ ai_gen_id }} ai-footer-newsletter-error-{{ ai_gen_id }}">
+                {{ form.errors.messages.email }}
+              </div>
+            {% endif %}
+            {% if form.posted_successfully? %}
+              <div id="ai-footer-newsletter-success-{{ ai_gen_id }}" class="ai-footer-newsletter-message-{{ ai_gen_id }} ai-footer-newsletter-success-{{ ai_gen_id }}">
+                {{ block.settings.newsletter_success_message }}
+              </div>
+            {% endif %}
+          {% endform %}
+        </div>
+      {% endif %}
+
+      {% if block.settings.show_social %}
+        <div class="ai-footer-social-container-{{ ai_gen_id }}">
+          <div class="ai-footer-social-icons-{{ ai_gen_id }}">
+            {% if block.settings.social_facebook_url != blank %}
+              <a href="{{ block.settings.social_facebook_url }}" class="ai-footer-social-icon-{{ ai_gen_id }}" target="_blank" rel="noopener" aria-label="Facebook">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              </a>
+            {% endif %}
+
+            {% if block.settings.social_instagram_url != blank %}
+              <a href="{{ block.settings.social_instagram_url }}" class="ai-footer-social-icon-{{ ai_gen_id }}" target="_blank" rel="noopener" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+              </a>
+            {% endif %}
+
+            {% if block.settings.social_tiktok_url != blank %}
+              <a href="{{ block.settings.social_tiktok_url }}" class="ai-footer-social-icon-{{ ai_gen_id }}" target="_blank" rel="noopener" aria-label="TikTok">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                </svg>
+              </a>
+            {% endif %}
+
+            {% if block.settings.social_twitter_url != blank %}
+              <a href="{{ block.settings.social_twitter_url }}" class="ai-footer-social-icon-{{ ai_gen_id }}" target="_blank" rel="noopener" aria-label="Twitter">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+              </a>
+            {% endif %}
+
+            {% if block.settings.social_youtube_url != blank %}
+              <a href="{{ block.settings.social_youtube_url }}" class="ai-footer-social-icon-{{ ai_gen_id }}" target="_blank" rel="noopener" aria-label="YouTube">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+              </a>
+            {% endif %}
+
+            {% if block.settings.social_pinterest_url != blank %}
+              <a href="{{ block.settings.social_pinterest_url }}" class="ai-footer-social-icon-{{ ai_gen_id }}" target="_blank" rel="noopener" aria-label="Pinterest">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24c6.624 0 11.99-5.367 11.99-12.013C24.007 5.367 18.641.001.017 0z"/>
+                </svg>
+              </a>
+            {% endif %}
+
+            {% if block.settings.social_snapchat_url != blank %}
+              <a href="{{ block.settings.social_snapchat_url }}" class="ai-footer-social-icon-{{ ai_gen_id }}" target="_blank" rel="noopener" aria-label="Snapchat">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24c6.624 0 11.99-5.367 11.99-12.013C24.007 5.367 18.641.001.017 0z"/>
+                </svg>
+              </a>
+            {% endif %}
+
+            {% if block.settings.social_linkedin_url != blank %}
+              <a href="{{ block.settings.social_linkedin_url }}" class="ai-footer-social-icon-{{ ai_gen_id }}" target="_blank" rel="noopener" aria-label="LinkedIn">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+      <div class="ai-footer-copyright-container-{{ ai_gen_id }}">
+        <p class="ai-footer-copyright-text-{{ ai_gen_id }}">
+          {{ block.settings.copyright_text }} 
+        </p>
+      </div>
+    </div> <!-- closes .ai-footer-inner-{{ ai_gen_id }} -->
+  </div>
+</footer-accordion-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class FooterAccordion{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.accordionButtons = this.querySelectorAll('[data-accordion-toggle]');
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        this.accordionButtons.forEach((button) => {
+          button.addEventListener('click', () => {
+            const targetId = button.getAttribute('data-accordion-toggle');
+            const content = this.querySelector(`[data-accordion-content="${targetId}"]`);
+            const icon = button.querySelector('.ai-footer-accordion-icon-{{ ai_gen_id }}');
+            
+            const isExpanded = button.getAttribute('aria-expanded') === 'true';
+            
+            button.setAttribute('aria-expanded', !isExpanded);
+            content.classList.toggle('active');
+            icon.classList.toggle('active');
+          });
+        });
+      }
+    }
+
+    customElements.define('footer-accordion-{{ ai_gen_id }}', FooterAccordion{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Modern footer",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Footer style"
+    },
+    {
+      "type": "color",
+      "id": "footer_background_color",
+      "label": "Background color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "footer_text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Accordion section"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_accordion",
+      "label": "Show accordion section",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "accordion_padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "accordion_padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "accordion_padding_left",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Left padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "accordion_padding_right",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Right padding",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Accordion item 1"
+    },
+    {
+      "type": "checkbox",
+      "id": "accordion_1_enabled",
+      "label": "Enable accordion item 1",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "accordion_1_title",
+      "label": "Title",
+      "default": "About"
+    },
+    {
+      "type": "page",
+      "id": "accordion_1_page_1",
+      "label": "Page 1"
+    },
+    {
+      "type": "page",
+      "id": "accordion_1_page_2",
+      "label": "Page 2"
+    },
+    {
+      "type": "page",
+      "id": "accordion_1_page_3",
+      "label": "Page 3"
+    },
+    {
+      "type": "page",
+      "id": "accordion_1_page_4",
+      "label": "Page 4"
+    },
+    {
+      "type": "header",
+      "content": "Accordion item 2"
+    },
+    {
+      "type": "checkbox",
+      "id": "accordion_2_enabled",
+      "label": "Enable accordion item 2",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "accordion_2_title",
+      "label": "Title",
+      "default": "Support"
+    },
+    {
+      "type": "page",
+      "id": "accordion_2_page_1",
+      "label": "Page 1"
+    },
+    {
+      "type": "page",
+      "id": "accordion_2_page_2",
+      "label": "Page 2"
+    },
+    {
+      "type": "page",
+      "id": "accordion_2_page_3",
+      "label": "Page 3"
+    },
+    {
+      "type": "page",
+      "id": "accordion_2_page_4",
+      "label": "Page 4"
+    },
+    {
+      "type": "header",
+      "content": "Accordion item 3"
+    },
+    {
+      "type": "checkbox",
+      "id": "accordion_3_enabled",
+      "label": "Enable accordion item 3",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "accordion_3_title",
+      "label": "Title"
+    },
+    {
+      "type": "page",
+      "id": "accordion_3_page_1",
+      "label": "Page 1"
+    },
+    {
+      "type": "page",
+      "id": "accordion_3_page_2",
+      "label": "Page 2"
+    },
+    {
+      "type": "page",
+      "id": "accordion_3_page_3",
+      "label": "Page 3"
+    },
+    {
+      "type": "page",
+      "id": "accordion_3_page_4",
+      "label": "Page 4"
+    },
+    {
+      "type": "header",
+      "content": "Accordion item 4"
+    },
+    {
+      "type": "checkbox",
+      "id": "accordion_4_enabled",
+      "label": "Enable accordion item 4",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "accordion_4_title",
+      "label": "Title"
+    },
+    {
+      "type": "page",
+      "id": "accordion_4_page_1",
+      "label": "Page 1"
+    },
+    {
+      "type": "page",
+      "id": "accordion_4_page_2",
+      "label": "Page 2"
+    },
+    {
+      "type": "page",
+      "id": "accordion_4_page_3",
+      "label": "Page 3"
+    },
+    {
+      "type": "page",
+      "id": "accordion_4_page_4",
+      "label": "Page 4"
+    },
+    {
+      "type": "header",
+      "content": "Accordion item 5"
+    },
+    {
+      "type": "checkbox",
+      "id": "accordion_5_enabled",
+      "label": "Enable accordion item 5",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "accordion_5_title",
+      "label": "Title"
+    },
+    {
+      "type": "page",
+      "id": "accordion_5_page_1",
+      "label": "Page 1"
+    },
+    {
+      "type": "page",
+      "id": "accordion_5_page_2",
+      "label": "Page 2"
+    },
+    {
+      "type": "page",
+      "id": "accordion_5_page_3",
+      "label": "Page 3"
+    },
+    {
+      "type": "page",
+      "id": "accordion_5_page_4",
+      "label": "Page 4"
+    },
+    {
+      "type": "header",
+      "content": "Accordion item 6"
+    },
+    {
+      "type": "checkbox",
+      "id": "accordion_6_enabled",
+      "label": "Enable accordion item 6",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "accordion_6_title",
+      "label": "Title"
+    },
+    {
+      "type": "page",
+      "id": "accordion_6_page_1",
+      "label": "Page 1"
+    },
+    {
+      "type": "page",
+      "id": "accordion_6_page_2",
+      "label": "Page 2"
+    },
+    {
+      "type": "page",
+      "id": "accordion_6_page_3",
+      "label": "Page 3"
+    },
+    {
+      "type": "page",
+      "id": "accordion_6_page_4",
+      "label": "Page 4"
+    },
+    {
+      "type": "header",
+      "content": "Newsletter section"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_newsletter",
+      "label": "Show newsletter section",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "newsletter_padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "newsletter_padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "newsletter_padding_left",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Left padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "newsletter_padding_right",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Right padding",
+      "default": 0
+    },
+    {
+      "type": "text",
+      "id": "newsletter_title",
+      "label": "Title",
+      "default": "Stay in the loop"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_description",
+      "label": "Description",
+      "default": "Subscribe to our newsletter for updates and exclusive offers"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_placeholder",
+      "label": "Email placeholder",
+      "default": "Enter your email"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_button_text",
+      "label": "Button text",
+      "default": "Subscribe"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_success_message",
+      "label": "Success message",
+      "default": "Thanks for subscribing!"
+    },
+    {
+      "type": "color",
+      "id": "newsletter_button_color",
+      "label": "Button color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "newsletter_button_text_color",
+      "label": "Button text color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "newsletter_button_hover_color",
+      "label": "Button hover color",
+      "default": "#f3f3f3"
+    },
+    {
+      "type": "header",
+      "content": "Social media section"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social",
+      "label": "Show social media section",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "social_padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "social_padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "social_padding_left",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Left padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "social_padding_right",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Right padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "social_icon_size",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 24
+    },
+    {
+      "type": "url",
+      "id": "social_facebook_url",
+      "label": "Facebook URL"
+    },
+    {
+      "type": "url",
+      "id": "social_instagram_url",
+      "label": "Instagram URL"
+    },
+    {
+      "type": "url",
+      "id": "social_tiktok_url",
+      "label": "TikTok URL"
+    },
+    {
+      "type": "url",
+      "id": "social_twitter_url",
+      "label": "Twitter URL"
+    },
+    {
+      "type": "url",
+      "id": "social_youtube_url",
+      "label": "YouTube URL"
+    },
+    {
+      "type": "url",
+      "id": "social_pinterest_url",
+      "label": "Pinterest URL"
+    },
+    {
+      "type": "url",
+      "id": "social_snapchat_url",
+      "label": "Snapchat URL"
+    },
+    {
+      "type": "url",
+      "id": "social_linkedin_url",
+      "label": "LinkedIn URL"
+    },
+    {
+      "type": "header",
+      "content": "Copyright section"
+    },
+    {
+      "type": "range",
+      "id": "copyright_padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "copyright_padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "copyright_padding_left",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Left padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "copyright_padding_right",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Right padding",
+      "default": 0
+    },
+    {
+      "type": "text",
+      "id": "copyright_text",
+      "label": "Copyright text",
+      "default": "© 2025, MUJŌ CO"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Modern footer"
+    }
+  ]
+}
+{% endschema %}
