@@ -1,0 +1,267 @@
+{%- comment -%}
+  MUJŌ CO. — Custom Hero Section
+  Save this file as: sections/mujo-hero.liquid
+  Then in the theme editor: remove/disable the old hero-slideshow section,
+  click "Add section" → it will appear as "Mujo Hero" → configure the
+  image, heading, subheading, CTA, overlay and alignment directly in
+  Customize, no code required after this point.
+{%- endcomment -%}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+{%- style -%}
+  .mujo-hero-{{ section.id }} {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: {{ section.settings.hero_height }}px;
+    overflow: hidden;
+    background-color: #1B1A18;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-hero-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-hero-bg.mujo-desktop-bg {
+    display: block;
+  }
+  .mujo-hero-{{ section.id }} .mujo-hero-bg.mujo-mobile-bg {
+    display: none;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+    z-index: 1;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-hero-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding: 64px 5vw;
+    display: flex;
+    flex-direction: column;
+    {% if section.settings.text_alignment == 'center' %}
+      align-items: center;
+      text-align: center;
+    {% elsif section.settings.text_alignment == 'right' %}
+      align-items: flex-end;
+      text-align: right;
+    {% else %}
+      align-items: flex-start;
+      text-align: left;
+    {% endif %}
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-hero-heading {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    font-size: clamp(28px, 4.2vw, 52px);
+    color: #FAFAF7;
+    max-width: 18ch;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-hero-subheading {
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #EAE7E0;
+    max-width: 46ch;
+    margin-top: 22px;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-hero-cta {
+    display: inline-block;
+    margin-top: 32px;
+    padding: 14px 36px;
+    background: #BA68C8;
+    color: #FAFAF7;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: background 0.25s ease, transform 0.25s ease;
+  }
+  .mujo-hero-{{ section.id }} .mujo-hero-cta:hover {
+    background: #9C4AB0;
+    transform: translateY(-1px);
+  }
+
+  @media screen and (max-width: 749px) {
+    .mujo-hero-{{ section.id }} {
+      min-height: {{ section.settings.hero_height_mobile }}px;
+    }
+    .mujo-hero-{{ section.id }} .mujo-hero-bg.mujo-desktop-bg {
+      display: none;
+    }
+    .mujo-hero-{{ section.id }} .mujo-hero-bg.mujo-mobile-bg {
+      display: block;
+    }
+    .mujo-hero-{{ section.id }} .mujo-hero-content {
+      padding: 40px 24px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="mujo-hero-{{ section.id }}">
+
+  {%- if section.settings.desktop_image != blank -%}
+    <div
+      class="mujo-hero-bg mujo-desktop-bg"
+      style="background-image: url({{ section.settings.desktop_image | image_url: width: 2000 }});"
+    ></div>
+  {%- endif -%}
+
+  {%- if section.settings.mobile_image != blank -%}
+    <div
+      class="mujo-hero-bg mujo-mobile-bg"
+      style="background-image: url({{ section.settings.mobile_image | image_url: width: 1000 }});"
+    ></div>
+  {%- elsif section.settings.desktop_image != blank -%}
+    {%- comment -%} fallback to desktop image on mobile if no mobile image is set {%- endcomment -%}
+    <div
+      class="mujo-hero-bg mujo-mobile-bg"
+      style="background-image: url({{ section.settings.desktop_image | image_url: width: 1200 }});"
+    ></div>
+  {%- endif -%}
+
+  {%- if section.settings.overlay_opacity > 0 -%}
+    <div class="mujo-hero-overlay"></div>
+  {%- endif -%}
+
+  <div class="mujo-hero-content">
+    {%- if section.settings.heading != blank -%}
+      <h1 class="mujo-hero-heading">{{ section.settings.heading }}</h1>
+    {%- endif -%}
+
+    {%- if section.settings.subheading != blank -%}
+      <div class="mujo-hero-subheading">{{ section.settings.subheading }}</div>
+    {%- endif -%}
+
+    {%- if section.settings.cta_text != blank and section.settings.cta_link != blank -%}
+      <a href="{{ section.settings.cta_link }}" class="mujo-hero-cta">{{ section.settings.cta_text }}</a>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Mujo Hero",
+  "tag": "section",
+  "class": "section mujo-hero-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Images"
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_image",
+      "label": "Desktop background image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile background image",
+      "info": "Optional — falls back to the desktop image if left blank"
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Inspired by music. Made for every day."
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Jewelry inspired by the music, moments, and stories we love — thoughtfully designed for fans who turn what they love into something they can wear and keep close."
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "Button label",
+      "default": "Shop the collection"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image overlay opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "hero_height",
+      "label": "Section height — desktop",
+      "min": 400,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 640
+    },
+    {
+      "type": "range",
+      "id": "hero_height_mobile",
+      "label": "Section height — mobile",
+      "min": 300,
+      "max": 700,
+      "step": 20,
+      "unit": "px",
+      "default": 520
+    }
+  ],
+  "presets": [
+    {
+      "name": "Mujo Hero"
+    }
+  ]
+}
+{% endschema %}
