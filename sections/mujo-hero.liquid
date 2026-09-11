@@ -5,10 +5,12 @@
   click "Add section" → it will appear as "Mujo Hero" → configure the
   image, heading, subheading, CTA, overlay and alignment directly in
   Customize, no code required after this point.
-{%- endcomment -%}
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  NOTE: this section uses your theme's global fonts (set in Theme
+  settings → Typography) via --font-heading-family / --font-body-family,
+  rather than importing its own fonts. Set Header font to Fraunces and
+  Body font to Work Sans there for this to look right.
+{%- endcomment -%}
 
 {%- style -%}
   .mujo-hero-{{ section.id }} {
@@ -63,7 +65,7 @@
   }
 
   .mujo-hero-{{ section.id }} .mujo-hero-heading {
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-heading-family), 'Fraunces', serif;
     font-weight: 400;
     letter-spacing: 0.01em;
     font-size: clamp(28px, 4.2vw, 52px);
@@ -74,7 +76,7 @@
   }
 
   .mujo-hero-{{ section.id }} .mujo-hero-subheading {
-    font-family: 'Work Sans', sans-serif;
+    font-family: var(--font-body-family), 'Work Sans', sans-serif;
     font-weight: 400;
     font-size: 16px;
     line-height: 1.6;
@@ -89,7 +91,7 @@
     padding: 14px 36px;
     background: #BA68C8;
     color: #FAFAF7;
-    font-family: 'Work Sans', sans-serif;
+    font-family: var(--font-body-family), 'Work Sans', sans-serif;
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 0.04em;
