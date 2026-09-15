@@ -1,0 +1,358 @@
+{%- comment -%}
+  MUJŌ CO. — Best Sellers product carousel
+  Manually curate up to 8 products via blocks in the Theme Editor.
+  Falls back to the store's general product list only if no products are selected.
+{%- endcomment -%}
+
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+
+{%- unless section.settings.quick_add == 'none' -%}
+  {{ 'quick-add.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+{%- endunless -%}
+{%- if section.settings.quick_add == 'standard' -%}
+  <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{%- style -%}
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&family=Urbanist:wght@400;500;600&display=swap');
+
+  .mujo-best-sellers-{{ section.id }} {
+    background: #FAFAF7;
+    padding: 64px 0;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-inner {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 5vw;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-heading {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(28px, 3vw, 40px);
+    color: #1B1A18;
+    margin: 0;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-shopall {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #1B1A18;
+    text-decoration: none;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-shopall:hover {
+    border-color: #1B1A18;
+  }
+
+  .mujo-best-sellers-{{ section.id }} slider-component {
+    display: block;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-track {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    margin: 0;
+    padding: 0 0 8px;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-track.slider {
+    overflow-x: auto;
+    scroll-padding-left: 0;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-slide {
+    flex: 0 0 auto;
+    width: calc((100% - (3 * 28px)) / 4);
+    scroll-snap-align: start;
+  }
+
+  @media screen and (max-width: 989px) {
+    .mujo-best-sellers-{{ section.id }} .mujo-bs-slide {
+      width: calc((100% - 28px) / 2.4);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .mujo-best-sellers-{{ section.id }} {
+      padding: 44px 0;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-bs-inner {
+      padding: 0 24px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-bs-header {
+      margin-bottom: 20px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-bs-slide {
+      width: 62%;
+    }
+  }
+
+  /* Strip the boxed/product-grid look for an editorial card */
+  .mujo-best-sellers-{{ section.id }} .card,
+  .mujo-best-sellers-{{ section.id }} .card__inner {
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+  }
+  .mujo-best-sellers-{{ section.id }} .card__media {
+    background: #E5E2D9;
+  }
+  .mujo-best-sellers-{{ section.id }} .card__content {
+    padding: 16px 0 0;
+  }
+  .mujo-best-sellers-{{ section.id }} .card__heading {
+    font-size: 14px;
+    margin: 0;
+  }
+  .mujo-best-sellers-{{ section.id }} .card__heading a {
+    font-family: 'Urbanist', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: #1B1A18;
+    text-decoration: none;
+  }
+  .mujo-best-sellers-{{ section.id }} .price {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 13px;
+    color: #6B6862;
+    margin-top: 4px;
+  }
+  .mujo-best-sellers-{{ section.id }} .price .price-item--sale {
+    color: #1B1A18;
+  }
+  .mujo-best-sellers-{{ section.id }} .quick-add {
+    margin-top: 10px;
+  }
+  .mujo-best-sellers-{{ section.id }} .quick-add__submit {
+    background: #EEC9FD;
+    color: #1B1A18;
+    border-radius: 2px;
+    box-shadow: none;
+  }
+  .mujo-best-sellers-{{ section.id }} .quick-add__submit:hover {
+    background: #E2AEF9;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-swatches {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid rgba(27, 26, 24, 0.15);
+    background-color: #E5E2D9;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .slider-buttons {
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign product_count = section.blocks.size
+  if product_count == 0
+    assign product_count = collections.all.products.size | at_most: 8
+  endif
+
+  assign show_slider = false
+  if product_count > 4
+    assign show_slider = true
+  endif
+-%}
+
+<div class="mujo-best-sellers-{{ section.id }}">
+  <div class="mujo-bs-inner">
+    <div class="mujo-bs-header">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="mujo-bs-heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.shop_all_link != blank -%}
+        <a href="{{ section.settings.shop_all_link }}" class="mujo-bs-shopall">
+          {{ section.settings.shop_all_label | default: 'Shop All' }}
+          <span aria-hidden="true">→</span>
+        </a>
+      {%- endif -%}
+    </div>
+
+    {%- if product_count > 0 -%}
+      <slider-component>
+        <ul
+          id="Slider-{{ section.id }}"
+          class="mujo-bs-track{% if show_slider %} slider slider--mobile slider--tablet{% endif %}"
+          role="list"
+          aria-label="{{ 'general.slider.name' | t }}"
+        >
+          {%- if section.blocks.size > 0 -%}
+            {%- for block in section.blocks limit: 8 -%}
+              {%- assign product = block.settings.product -%}
+              {%- if product != blank -%}
+                <li
+                  id="Slide-{{ section.id }}-{{ forloop.index }}"
+                  class="mujo-bs-slide{% if show_slider %} slider__slide{% endif %}"
+                  {{ block.shopify_attributes }}
+                >
+                  {% render 'card-product',
+                    card_product: product,
+                    media_aspect_ratio: 'portrait',
+                    show_secondary_image: true,
+                    show_rating: section.settings.show_rating,
+                    section_id: section.id,
+                    quick_add: section.settings.quick_add,
+                    lazy_load: forloop.index > 2
+                  %}
+                  {%- for option in product.options_with_values -%}
+                    {%- if option.name == 'Color' or option.name == 'Colour' -%}
+                      <div class="mujo-bs-swatches">
+                        {%- for value in option.values limit: 6 -%}
+                          <span class="mujo-bs-swatch" style="background-color: {{ value | handleize }};" title="{{ value }}"></span>
+                        {%- endfor -%}
+                      </div>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- for product in collections.all.products limit: 8 -%}
+              <li
+                id="Slide-{{ section.id }}-{{ forloop.index }}"
+                class="mujo-bs-slide{% if show_slider %} slider__slide{% endif %}"
+              >
+                {% render 'card-product',
+                  card_product: product,
+                  media_aspect_ratio: 'portrait',
+                  show_secondary_image: true,
+                  show_rating: section.settings.show_rating,
+                  section_id: section.id,
+                  quick_add: section.settings.quick_add,
+                  lazy_load: forloop.index > 2
+                %}
+              </li>
+            {%- endfor -%}
+          {%- endif -%}
+        </ul>
+        {%- if show_slider -%}
+          <div class="slider-buttons">
+            <button
+              type="button"
+              class="slider-button slider-button--prev"
+              name="previous"
+              aria-label="{{ 'general.slider.previous_slide' | t }}"
+              aria-controls="Slider-{{ section.id }}"
+            >
+              <span class="svg-wrapper">{{- 'icon-caret.svg' | inline_asset_content -}}</span>
+            </button>
+            <div class="slider-counter caption">
+              <span class="slider-counter--current">1</span>
+              <span aria-hidden="true"> / </span>
+              <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+              <span class="slider-counter--total">{{ product_count }}</span>
+            </div>
+            <button
+              type="button"
+              class="slider-button slider-button--next"
+              name="next"
+              aria-label="{{ 'general.slider.next_slide' | t }}"
+              aria-controls="Slider-{{ section.id }}"
+            >
+              <span class="svg-wrapper">{{- 'icon-caret.svg' | inline_asset_content -}}</span>
+            </button>
+          </div>
+        {%- endif -%}
+      </slider-component>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Best Sellers",
+  "tag": "section",
+  "class": "section mujo-best-sellers-section",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Best Sellers"
+    },
+    {
+      "type": "text",
+      "id": "shop_all_label",
+      "label": "\"Shop All\" label",
+      "default": "Shop All"
+    },
+    {
+      "type": "url",
+      "id": "shop_all_link",
+      "label": "\"Shop All\" link",
+      "info": "Usually your Shop All collection or page"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show product rating",
+      "default": false,
+      "info": "Only shows if a product has reviews set up"
+    },
+    {
+      "type": "select",
+      "id": "quick_add",
+      "label": "Quick add",
+      "default": "none",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "standard", "label": "Standard" },
+        { "value": "bulk", "label": "Bulk" }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Best Sellers"
+    }
+  ]
+}
+{% endschema %}
