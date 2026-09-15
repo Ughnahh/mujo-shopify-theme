@@ -12,7 +12,7 @@
     class MujoProductCard extends HTMLElement {
       connectedCallback() {
         this.swatches = this.querySelectorAll('.mujo-pc-swatch');
-        this.image = this.querySelector('.mujo-pc-image');
+        this.image = this.querySelector('.mujo-pc-image-primary');
         this.priceEl = this.querySelector('.mujo-pc-price');
         this.variantInput = this.querySelector('.mujo-pc-variant-id');
         this.addButton = this.querySelector('.mujo-pc-add-to-bag');
@@ -187,7 +187,26 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: opacity 0.4s ease;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-image-secondary {
+    opacity: 0;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    background: #C9A7E8;
+    color: #1B1A18;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 2px;
   }
 
   .mujo-best-sellers-{{ section.id }} .mujo-pc-info {
@@ -204,10 +223,16 @@
     color: #1B1A18;
     text-decoration: none;
   }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-subtitle {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 12px;
+    color: #8A8579;
+  }
   .mujo-best-sellers-{{ section.id }} .mujo-pc-price {
     font-family: 'Urbanist', sans-serif;
     font-size: 13px;
     color: #6B6862;
+    margin-top: 2px;
   }
   .mujo-best-sellers-{{ section.id }} .mujo-pc-price-sale {
     color: #1B1A18;
@@ -240,16 +265,14 @@
     border-radius: 50%;
   }
 
-  /* Add to Bag: hover-revealed on desktop, always visible on touch */
+  /* Add to Bag: revealed inline between price and swatches on
+     desktop hover; always visible on touch since hover doesn't exist. */
   .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag-wrap {
-    position: absolute;
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
+    max-height: 0;
     opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    pointer-events: none;
+    overflow: hidden;
+    margin-top: 0;
+    transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
   }
   .mujo-best-sellers-{{ section.id }} .mujo-pc-form {
     margin: 0;
@@ -282,20 +305,23 @@
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .mujo-best-sellers-{{ section.id }} .mujo-pc:hover .mujo-pc-image {
-      transform: scale(1.03);
+    .mujo-best-sellers-{{ section.id }} .mujo-pc:hover .mujo-pc-image-primary {
+      opacity: 0;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-pc:hover .mujo-pc-image-secondary {
+      opacity: 1;
     }
     .mujo-best-sellers-{{ section.id }} .mujo-pc:hover .mujo-pc-add-to-bag-wrap {
+      max-height: 44px;
       opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
+      margin-top: 8px;
     }
   }
   @media (hover: none) {
     .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag-wrap {
+      max-height: 44px;
       opacity: 1;
-      transform: none;
-      pointer-events: auto;
+      margin-top: 8px;
     }
   }
 
@@ -305,8 +331,15 @@
   }
 
   @media screen and (max-width: 749px) {
+    .mujo-best-sellers-{{ section.id }} .mujo-pc-badge {
+      font-size: 9px;
+      padding: 4px 8px;
+    }
     .mujo-best-sellers-{{ section.id }} .mujo-pc-title {
       font-size: 13px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-pc-subtitle {
+      font-size: 11px;
     }
     .mujo-best-sellers-{{ section.id }} .mujo-pc-price {
       font-size: 12px;
@@ -369,7 +402,7 @@
                   class="mujo-bs-slide{% if show_slider %} slider__slide{% endif %}"
                   {{ block.shopify_attributes }}
                 >
-                  {% render 'mujo-product-card', product: product, section_id: section.id, lazy_load: lazy_load %}
+                  {% render 'mujo-product-card', product: product, section_id: section.id, lazy_load: lazy_load, show_badge: section.settings.show_badge, badge_text: section.settings.badge_text %}
                 </li>
               {%- endif -%}
             {%- endfor -%}
@@ -383,7 +416,7 @@
                 id="Slide-{{ section.id }}-{{ forloop.index }}"
                 class="mujo-bs-slide{% if show_slider %} slider__slide{% endif %}"
               >
-                {% render 'mujo-product-card', product: product, section_id: section.id, lazy_load: lazy_load %}
+                {% render 'mujo-product-card', product: product, section_id: section.id, lazy_load: lazy_load, show_badge: section.settings.show_badge, badge_text: section.settings.badge_text %}
               </li>
             {%- endfor -%}
           {%- endif -%}
@@ -445,6 +478,18 @@
       "id": "shop_all_link",
       "label": "\"Shop All\" link",
       "info": "Usually your Shop All collection or page"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badge",
+      "label": "Show badge on product cards",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "Bestseller"
     }
   ],
   "blocks": [
