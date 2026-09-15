@@ -1,0 +1,130 @@
+{%- comment -%}
+  MUJŌ CO. — unified editorial product card.
+  Image + title/price/swatches as one continuous card, no gap or
+  border between the image and the info block below it. Clicking a
+  color swatch swaps the card image to that variant's photo and
+  updates price/selection state. "Add to Bag" adds the currently
+  selected variant — revealed on hover on desktop (component
+  mujo-product-card, defined once in the section that renders this),
+  always visible on touch devices since hover doesn't exist there.
+
+  Accepts:
+  - product: {Object} Product Liquid object
+  - section_id: {String} id of the containing section
+  - lazy_load: {Boolean} lazy-load the card image (optional, default true)
+{%- endcomment -%}
+
+{%- liquid
+  assign lazy_load = lazy_load | default: true
+  assign default_variant = product.selected_or_first_available_variant
+  assign default_image = default_variant.featured_image | default: product.featured_image
+
+  assign color_position = 0
+  for option in product.options_with_values
+    if option.name == 'Color' or option.name == 'Colour'
+      assign color_position = option.position
+    endif
+  endfor
+  assign color_index = color_position | minus: 1
+-%}
+
+<mujo-product-card class="mujo-pc">
+  <div class="mujo-pc-media">
+    <a href="{{ product.url }}" class="mujo-pc-media-link" aria-label="{{ product.title | escape }}">
+      {%- if default_image -%}
+        <img
+          class="mujo-pc-image"
+          src="{{ default_image | image_url: width: 700 }}"
+          srcset="{{ default_image | image_url: width: 400 }} 400w, {{ default_image | image_url: width: 700 }} 700w, {{ default_image | image_url: width: 1000 }} 1000w"
+          sizes="(max-width: 749px) 60vw, 320px"
+          alt="{{ default_image.alt | default: product.title | escape }}"
+          width="{{ default_image.width }}"
+          height="{{ default_image.height }}"
+          {%- unless lazy_load == false %}
+            loading="lazy"
+          {%- endunless %}
+        >
+      {%- endif -%}
+    </a>
+
+    {%- if default_variant -%}
+      <product-form class="mujo-pc-add-to-bag-wrap" data-section-id="{{ section_id }}">
+        {%- form 'product',
+          product,
+          id: 'mujo-pc-form-' | append: section_id | append: product.id,
+          class: 'mujo-pc-form',
+          novalidate: 'novalidate',
+          data-type: 'add-to-cart-form'
+        -%}
+          <input
+            type="hidden"
+            name="id"
+            class="mujo-pc-variant-id product-variant-id"
+            value="{{ default_variant.id }}"
+            {%- unless default_variant.available %}
+              disabled
+            {%- endunless %}
+          >
+          <button
+            type="submit"
+            name="add"
+            class="mujo-pc-add-to-bag"
+            aria-label="{{ 'products.product.add_to_cart' | t }} — {{ product.title | escape }}"
+            {%- unless default_variant.available %}
+              disabled
+            {%- endunless %}
+          >
+            <span class="mujo-pc-add-to-bag-label">
+              {%- if default_variant.available -%}
+                Add to Bag
+              {%- else -%}
+                {{ 'products.product.sold_out' | t }}
+              {%- endif -%}
+            </span>
+            <span class="sold-out-message hidden">{{ 'products.product.sold_out' | t }}</span>
+            {%- render 'loading-spinner' -%}
+          </button>
+        {%- endform -%}
+      </product-form>
+    {%- endif -%}
+  </div>
+
+  <div class="mujo-pc-info">
+    <a href="{{ product.url }}" class="mujo-pc-title">{{ product.title | escape }}</a>
+    <div class="mujo-pc-price">
+      {%- if default_variant.compare_at_price > default_variant.price -%}
+        <span class="mujo-pc-price-sale">{{ default_variant.price | money }}</span>
+        <s class="mujo-pc-price-compare">{{ default_variant.compare_at_price | money }}</s>
+      {%- else -%}
+        <span class="mujo-pc-price-regular">{{ default_variant.price | money }}</span>
+      {%- endif -%}
+    </div>
+
+    {%- if color_position > 0 -%}
+      {%- assign seen_colors = '|' -%}
+      <div class="mujo-pc-swatches" role="group" aria-label="Color">
+        {%- for variant in product.variants -%}
+          {%- assign color_value = variant.options[color_index] -%}
+          {%- assign color_marker = '|' | append: color_value | append: '|' -%}
+          {%- unless seen_colors contains color_marker -%}
+            {%- assign seen_colors = seen_colors | append: color_value | append: '|' -%}
+            {%- assign swatch_image = variant.featured_image | default: default_image -%}
+            <button
+              type="button"
+              class="mujo-pc-swatch{% if variant.id == default_variant.id %} is-selected{% endif %}"
+              style="background-color: {{ color_value | handleize }};"
+              aria-label="{{ color_value | escape }}"
+              aria-pressed="{% if variant.id == default_variant.id %}true{% else %}false{% endif %}"
+              data-variant-id="{{ variant.id }}"
+              data-available="{{ variant.available }}"
+              data-image="{{ swatch_image | image_url: width: 700 }}"
+              data-image-srcset="{{ swatch_image | image_url: width: 400 }} 400w, {{ swatch_image | image_url: width: 700 }} 700w, {{ swatch_image | image_url: width: 1000 }} 1000w"
+              data-price="{{ variant.price | money }}"
+              data-compare-price="{% if variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money }}{% endif %}"
+            ></button>
+          {%- endunless -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</mujo-product-card>
