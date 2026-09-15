@@ -133,9 +133,23 @@
   @media screen and (max-width: 749px) {
     .mujo-hero-{{ section.id }} .mujo-grid {
       grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
       min-height: {{ section.settings.hero_height_mobile }}px;
     }
+    .mujo-hero-{{ section.id }} .mujo-media-left,
+    .mujo-hero-{{ section.id }} .mujo-media-right {
+      grid-column: 1;
+      grid-row: 1;
+    }
     .mujo-hero-{{ section.id }} .mujo-media-left {
+      display: block;
+    }
+    .mujo-hero-{{ section.id }} .mujo-media-right {
+      background-color: transparent;
+      z-index: 1;
+    }
+    .mujo-hero-{{ section.id }} .mujo-media-right > img,
+    .mujo-hero-{{ section.id }} .mujo-media-right > video {
       display: none;
     }
     .mujo-hero-{{ section.id }} .mujo-text {
