@@ -11,20 +11,29 @@
   if (!customElements.get('mujo-product-card')) {
     class MujoProductCard extends HTMLElement {
       connectedCallback() {
-        this.swatches = this.querySelectorAll('.mujo-pc-swatch');
-        this.image = this.querySelector('.mujo-pc-image-primary');
-        this.priceEl = this.querySelector('.mujo-pc-price');
-        this.variantInput = this.querySelector('.mujo-pc-variant-id');
-        this.addButton = this.querySelector('.mujo-pc-add-to-bag');
-        this.addLabel = this.querySelector('.mujo-pc-add-to-bag-label');
-
-        this.swatches.forEach((swatch) => {
-          swatch.addEventListener('click', () => this.selectSwatch(swatch));
+        // Delegate from the custom element itself, and look up
+        // children lazily inside the handler (not here). During
+        // initial HTML parsing this element can be upgraded the
+        // instant its opening tag is seen, before its own children
+        // (swatches, image, price) have been parsed yet — querying
+        // for them here would silently find nothing.
+        this.addEventListener('click', (event) => {
+          const swatch = event.target.closest('.mujo-pc-swatch');
+          if (swatch && this.contains(swatch)) {
+            this.selectSwatch(swatch);
+          }
         });
       }
 
       selectSwatch(swatch) {
-        this.swatches.forEach((s) => {
+        const swatches = this.querySelectorAll('.mujo-pc-swatch');
+        const image = this.querySelector('.mujo-pc-image-primary');
+        const priceEl = this.querySelector('.mujo-pc-price');
+        const variantInput = this.querySelector('.mujo-pc-variant-id');
+        const addButton = this.querySelector('.mujo-pc-add-to-bag');
+        const addLabel = this.querySelector('.mujo-pc-add-to-bag-label');
+
+        swatches.forEach((s) => {
           const isSelected = s === swatch;
           s.classList.toggle('is-selected', isSelected);
           s.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
@@ -32,33 +41,33 @@
 
         const available = swatch.dataset.available === 'true';
 
-        if (this.image && swatch.dataset.image) {
-          this.image.src = swatch.dataset.image;
+        if (image && swatch.dataset.image) {
+          image.src = swatch.dataset.image;
           if (swatch.dataset.imageSrcset) {
-            this.image.srcset = swatch.dataset.imageSrcset;
+            image.srcset = swatch.dataset.imageSrcset;
           }
         }
 
-        if (this.variantInput) {
-          this.variantInput.value = swatch.dataset.variantId;
+        if (variantInput) {
+          variantInput.value = swatch.dataset.variantId;
         }
 
-        if (this.addButton) {
-          this.addButton.disabled = !available;
+        if (addButton) {
+          addButton.disabled = !available;
         }
-        if (this.addLabel) {
-          this.addLabel.textContent = available ? 'Add to Bag' : 'Sold out';
+        if (addLabel) {
+          addLabel.textContent = available ? 'Add to Bag' : 'Sold out';
         }
 
-        if (this.priceEl) {
+        if (priceEl) {
           const price = swatch.dataset.price;
           const comparePrice = swatch.dataset.comparePrice;
           if (comparePrice) {
-            this.priceEl.innerHTML =
+            priceEl.innerHTML =
               '<span class="mujo-pc-price-sale">' + price + '</span> ' +
               '<s class="mujo-pc-price-compare">' + comparePrice + '</s>';
           } else {
-            this.priceEl.innerHTML = '<span class="mujo-pc-price-regular">' + price + '</span>';
+            priceEl.innerHTML = '<span class="mujo-pc-price-regular">' + price + '</span>';
           }
         }
       }
