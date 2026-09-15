@@ -1,21 +1,22 @@
-{%- comment -%}
-  MUJŌ CO. — unified editorial product card.
-  Image + title/price/swatches as one continuous card, no gap or
-  border between the image and the info block below it. Clicking a
-  color swatch swaps the card image to that variant's photo and
-  updates price/selection state. "Add to Bag" adds the currently
-  selected variant — revealed on hover on desktop (component
-  mujo-product-card, defined once in the section that renders this),
-  always visible on touch devices since hover doesn't exist there.
+{%- doc -%}
+  MUJŌ CO. — unified editorial product card. Image + title/price/
+  swatches as one continuous card, no gap or border between the image
+  and the info block below it. Clicking a color swatch swaps the card
+  image to that variant's photo and updates price/selection state.
+  "Add to Bag" adds the currently selected variant — revealed on
+  hover on desktop (component mujo-product-card, defined once in the
+  section that renders this), always visible on touch devices since
+  hover doesn't exist there.
 
-  Accepts:
-  - product: {Object} Product Liquid object
-  - section_id: {String} id of the containing section
-  - lazy_load: {Boolean} lazy-load the card image (optional, default true)
-{%- endcomment -%}
+  @param {product} product - Product Liquid object
+  @param {string} [section_id] - id of the containing section
+  @param {boolean} [lazy_load] - lazy-load the card image (default: true)
+
+  @example
+  {% render 'mujo-product-card', product: product, section_id: section.id, lazy_load: true %}
+{%- enddoc -%}
 
 {%- liquid
-  assign section_id = section_id | default: ''
   assign lazy_load = lazy_load | default: true
   assign default_variant = product.selected_or_first_available_variant
   assign default_image = default_variant.featured_image | default: product.featured_image
