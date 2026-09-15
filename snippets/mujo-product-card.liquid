@@ -26,6 +26,7 @@
     endif
   endfor
   assign color_index = color_position | minus: 1
+  assign form_id = 'mujo-pc-form-' | append: section_id | append: product.id
 -%}
 
 <mujo-product-card class="mujo-pc">
@@ -51,7 +52,7 @@
       <product-form class="mujo-pc-add-to-bag-wrap" data-section-id="{{ section_id }}">
         {%- form 'product',
           product,
-          id: 'mujo-pc-form-' | append: section_id | append: product.id,
+          id: form_id,
           class: 'mujo-pc-form',
           novalidate: 'novalidate',
           data-type: 'add-to-cart-form'
