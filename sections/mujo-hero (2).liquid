@@ -1,0 +1,279 @@
+{%- comment -%}
+  MUJŌ CO. — Custom Hero Section (Final: two-side media split)
+  Save this file as: sections/mujo-hero.liquid (replace any previous version)
+
+  Desktop: two columns, side by side. EACH side accepts either a photo
+  or a video (video takes priority if both are uploaded). Text + CTA
+  are overlaid on the right side, on top of a scrim for legibility.
+
+  Mobile: the left media hides, and the right side (with its text
+  overlay) expands to fill the full width — giving the full-bleed
+  mobile hero we agreed on, with no separate settings needed.
+
+  Fonts: Playfair Display Italic (heading) + Urbanist (subheading/CTA),
+  loaded via @import inside this section's own <style> block — scoped
+  to this file only, so it won't affect fonts anywhere else on the site
+  and won't trigger the "stray <link> tag" issue from earlier.
+{%- endcomment -%}
+
+{%- style -%}
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&family=Urbanist:wght@400;500;600&display=swap');
+
+  .mujo-hero-{{ section.id }} {
+    background: #FAFAF7;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: {{ section.settings.hero_height }}px;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-media {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-media img,
+  .mujo-hero-{{ section.id }} .mujo-media video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-media-right {
+    display: flex;
+    align-items: center;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(27,26,24,{{ section.settings.overlay_opacity | divided_by: 100.0 }}) 0%, rgba(27,26,24,0) 65%);
+    z-index: 1;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-text {
+    position: relative;
+    z-index: 2;
+    padding: 0 6vw;
+    max-width: 34ch;
+  }
+
+  .mujo-hero-{{ section.id }} h1 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(28px, 3.4vw, 46px);
+    line-height: 1.15;
+    color: #FAFAF7;
+    margin: 0;
+  }
+
+  .mujo-hero-{{ section.id }} p {
+    font-family: 'Urbanist', sans-serif;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #F1EFEA;
+    margin-top: 16px;
+  }
+
+  .mujo-hero-{{ section.id }} .mujo-cta {
+    display: inline-block;
+    margin-top: 26px;
+    padding: 13px 32px;
+    background: #EEC9FD;
+    color: #1B1A18;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: background 0.25s ease, transform 0.25s ease;
+  }
+  .mujo-hero-{{ section.id }} .mujo-cta:hover {
+    background: #E2AEF9;
+    transform: translateY(-1px);
+  }
+
+  @media screen and (max-width: 749px) {
+    .mujo-hero-{{ section.id }} .mujo-grid {
+      grid-template-columns: 1fr;
+      min-height: {{ section.settings.hero_height_mobile }}px;
+    }
+    .mujo-hero-{{ section.id }} .mujo-media-left {
+      display: none;
+    }
+    .mujo-hero-{{ section.id }} .mujo-text {
+      padding: 0 24px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="mujo-hero-{{ section.id }}">
+  <div class="mujo-grid">
+
+    {%- comment -%} LEFT SIDE — video takes priority over image {%- endcomment -%}
+    <div class="mujo-media mujo-media-left">
+      {%- if section.settings.left_video != blank -%}
+        <video autoplay muted loop playsinline
+          poster="{% if section.settings.left_image != blank %}{{ section.settings.left_image | image_url: width: 1000 }}{% endif %}">
+          {%- for source in section.settings.left_video.sources -%}
+            {%- if source.mime_type == 'video/mp4' -%}
+              <source src="{{ source.url }}" type="{{ source.mime_type }}">
+            {%- endif -%}
+          {%- endfor -%}
+        </video>
+      {%- elsif section.settings.left_image != blank -%}
+        <img src="{{ section.settings.left_image | image_url: width: 1200 }}" loading="lazy" alt="{{ section.settings.left_image.alt | default: 'MUJŌ CO.' | escape }}">
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} RIGHT SIDE — video takes priority over image, text overlaid on top {%- endcomment -%}
+    <div class="mujo-media mujo-media-right">
+      {%- if section.settings.right_video != blank -%}
+        <video autoplay muted loop playsinline
+          poster="{% if section.settings.right_image != blank %}{{ section.settings.right_image | image_url: width: 1000 }}{% endif %}">
+          {%- for source in section.settings.right_video.sources -%}
+            {%- if source.mime_type == 'video/mp4' -%}
+              <source src="{{ source.url }}" type="{{ source.mime_type }}">
+            {%- endif -%}
+          {%- endfor -%}
+        </video>
+      {%- elsif section.settings.right_image != blank -%}
+        <img src="{{ section.settings.right_image | image_url: width: 1200 }}" loading="lazy" alt="{{ section.settings.right_image.alt | default: 'MUJŌ CO.' | escape }}">
+      {%- endif -%}
+
+      <div class="mujo-scrim"></div>
+
+      <div class="mujo-text">
+        {%- if section.settings.heading != blank -%}
+          <h1>{{ section.settings.heading }}</h1>
+        {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <p>{{ section.settings.subheading }}</p>
+        {%- endif -%}
+        {%- if section.settings.cta_text != blank and section.settings.cta_link != blank -%}
+          <a href="{{ section.settings.cta_link }}" class="mujo-cta">{{ section.settings.cta_text }}</a>
+        {%- endif -%}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Mujo Hero",
+  "tag": "section",
+  "class": "section mujo-hero-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Left side"
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image",
+      "label": "Left image",
+      "info": "Used as-is if no video is uploaded, or as the video's poster frame while it loads"
+    },
+    {
+      "type": "video",
+      "id": "left_video",
+      "label": "Left video (optional)",
+      "info": "If uploaded, this plays instead of the image"
+    },
+    {
+      "type": "header",
+      "content": "Right side"
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image",
+      "label": "Right image"
+    },
+    {
+      "type": "video",
+      "id": "right_video",
+      "label": "Right video (optional)"
+    },
+    {
+      "type": "header",
+      "content": "Text (overlaid on the right side)"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Inspired by music. Made for every day."
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Jewelry inspired by the music, moments, and stories we love — thoughtfully designed for fans who turn what they love into something they can wear and keep close."
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "Button label",
+      "default": "Shop the collection"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Text-side scrim strength",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 45
+    },
+    {
+      "type": "range",
+      "id": "hero_height",
+      "label": "Section height — desktop",
+      "min": 400,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 600
+    },
+    {
+      "type": "range",
+      "id": "hero_height_mobile",
+      "label": "Section height — mobile",
+      "min": 300,
+      "max": 700,
+      "step": 20,
+      "unit": "px",
+      "default": 520
+    }
+  ],
+  "presets": [
+    {
+      "name": "Mujo Hero"
+    }
+  ]
+}
+{% endschema %}
