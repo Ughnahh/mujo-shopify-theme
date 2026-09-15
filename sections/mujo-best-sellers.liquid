@@ -213,6 +213,10 @@
           {%- if section.blocks.size > 0 -%}
             {%- for block in section.blocks limit: 8 -%}
               {%- assign product = block.settings.product -%}
+              {%- assign lazy_load = false -%}
+              {%- if forloop.index > 2 -%}
+                {%- assign lazy_load = true -%}
+              {%- endif -%}
               {%- if product != blank -%}
                 <li
                   id="Slide-{{ section.id }}-{{ forloop.index }}"
@@ -226,7 +230,7 @@
                     show_rating: section.settings.show_rating,
                     section_id: section.id,
                     quick_add: section.settings.quick_add,
-                    lazy_load: forloop.index > 2
+                    lazy_load: lazy_load
                   %}
                   {%- for option in product.options_with_values -%}
                     {%- if option.name == 'Color' or option.name == 'Colour' -%}
@@ -242,6 +246,10 @@
             {%- endfor -%}
           {%- else -%}
             {%- for product in collections.all.products limit: 8 -%}
+              {%- assign lazy_load = false -%}
+              {%- if forloop.index > 2 -%}
+                {%- assign lazy_load = true -%}
+              {%- endif -%}
               <li
                 id="Slide-{{ section.id }}-{{ forloop.index }}"
                 class="mujo-bs-slide{% if show_slider %} slider__slide{% endif %}"
@@ -253,7 +261,7 @@
                   show_rating: section.settings.show_rating,
                   section_id: section.id,
                   quick_add: section.settings.quick_add,
-                  lazy_load: forloop.index > 2
+                  lazy_load: lazy_load
                 %}
               </li>
             {%- endfor -%}
