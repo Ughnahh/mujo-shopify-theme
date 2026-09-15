@@ -66,30 +66,34 @@
   .mujo-hero-{{ section.id }} .mujo-text {
     position: relative;
     z-index: 2;
-    padding: 0 6vw;
-    max-width: 34ch;
+    width: 100%;
+    padding: 0 7vw;
+    max-width: none;
   }
 
   .mujo-hero-{{ section.id }} .mujo-heading-1 {
     font-family: 'Playfair Display', serif;
     font-style: italic;
     font-weight: 400;
-    font-size: clamp(28px, 3.4vw, 46px);
-    line-height: 1.15;
+    font-size: clamp(38px, 5vw, 72px);
+    line-height: 1.05;
     color: {{ section.settings.heading_color }};
     margin: 0;
     text-align: {{ section.settings.heading_1_alignment }};
+    max-width: none;
   }
 
   .mujo-hero-{{ section.id }} .mujo-heading-2 {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
+    font-family: 'Urbanist', sans-serif;
     font-weight: 400;
-    font-size: clamp(19px, 2.1vw, 27px);
-    line-height: 1.2;
+    font-size: clamp(14px, 1.2vw, 18px);
+    line-height: 1.4;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: {{ section.settings.heading_2_color }};
-    margin: 6px 0 0;
+    margin: 18px 0 0;
     text-align: {{ section.settings.heading_2_alignment }};
+    max-width: none;
   }
 
   .mujo-hero-{{ section.id }} .mujo-subheading {
