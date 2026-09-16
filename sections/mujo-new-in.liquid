@@ -58,7 +58,6 @@
         const priceEl = this.querySelector('.mujo-pc-price');
         const variantInput = this.querySelector('.mujo-pc-variant-id');
         const addButton = this.querySelector('.mujo-pc-add-to-bag');
-        const addLabel = this.querySelector('.mujo-pc-add-to-bag-label');
 
         swatches.forEach((s) => {
           const isSelected = s === swatch;
@@ -86,11 +85,8 @@
 
         if (addButton) {
           addButton.disabled = !available;
-          const baseLabel = available ? 'Add to Cart' : 'Sold out';
+          const baseLabel = available ? 'Add to Bag' : 'Sold out';
           addButton.setAttribute('aria-label', baseLabel + (colorLabel ? ' — ' + colorLabel : ''));
-        }
-        if (addLabel) {
-          addLabel.textContent = available ? 'Add to Cart' : 'Sold out';
         }
 
         if (priceEl) {
@@ -336,66 +332,66 @@
     border-radius: 50%;
   }
 
-  /* Add to Cart: plain transparent text below the swatches — no
-     fill, border, or box. Hidden by default, revealed on hover on
-     desktop; always visible on touch devices since hover doesn't
-     exist there. */
+  /* Add to Bag: small icon button anchored top-right of the image.
+     Revealed on hover on desktop; always visible on touch devices. */
   .mujo-new-in-{{ section.id }} .mujo-pc-add-to-bag-wrap {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    margin-top: 0;
-    transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 3;
+    margin: 0;
   }
   .mujo-new-in-{{ section.id }} .mujo-pc-form {
     margin: 0;
   }
   .mujo-new-in-{{ section.id }} .mujo-pc-add-to-bag {
-    display: inline-block;
-    font-family: 'Urbanist', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: #1B1A18;
-    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
     border: none;
-    box-shadow: none;
-    padding: 4px 0;
-    margin: 0;
-    text-decoration: underline;
-    text-underline-offset: 2px;
     cursor: pointer;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
   }
   .mujo-new-in-{{ section.id }} .mujo-pc-add-to-bag:hover {
-    color: #6B6862;
+    transform: translateY(0) scale(1.08);
   }
   .mujo-new-in-{{ section.id }} .mujo-pc-add-to-bag:disabled {
-    color: #B7B2A9;
+    opacity: 0.35 !important;
     cursor: default;
+  }
+  .mujo-new-in-{{ section.id }} .mujo-pc-add-to-bag-icon {
+    display: flex;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
   }
   .mujo-new-in-{{ section.id }} .mujo-pc-add-to-bag .loading__spinner {
     display: none;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .mujo-new-in-{{ section.id }} .mujo-pc:hover .mujo-pc-add-to-bag-wrap {
-      max-height: 28px;
+    .mujo-new-in-{{ section.id }} .mujo-pc:hover .mujo-pc-add-to-bag {
       opacity: 1;
-      margin-top: 6px;
+      transform: translateY(0);
     }
+  }
+  @media (hover: none) {
+    .mujo-new-in-{{ section.id }} .mujo-pc-add-to-bag {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
     .mujo-new-in-{{ section.id }} .mujo-pc:hover .mujo-pc-image-primary {
       opacity: 0;
     }
     .mujo-new-in-{{ section.id }} .mujo-pc:hover .mujo-pc-image-secondary {
       opacity: 1;
-    }
-  }
-  @media (hover: none) {
-    .mujo-new-in-{{ section.id }} .mujo-pc-add-to-bag-wrap {
-      max-height: 28px;
-      opacity: 1;
-      margin-top: 6px;
     }
   }
 
@@ -423,7 +419,12 @@
       height: 14px;
     }
     .mujo-new-in-{{ section.id }} .mujo-pc-add-to-bag {
-      font-size: 11px;
+      width: 48px;
+      height: 48px;
+    }
+    .mujo-new-in-{{ section.id }} .mujo-pc-add-to-bag-icon svg {
+      width: 20px;
+      height: 20px;
     }
   }
 {%- endstyle -%}
