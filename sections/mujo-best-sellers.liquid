@@ -1,0 +1,562 @@
+{%- comment -%}
+  MUJŌ CO. — Best Sellers product carousel
+  Manually curate up to 8 products via blocks in the Theme Editor.
+  Falls back to the store's general product list only if no products are selected.
+{%- endcomment -%}
+
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+
+<script>
+  if (!customElements.get('mujo-product-card')) {
+    class MujoProductCard extends HTMLElement {
+      connectedCallback() {
+        // Delegate from the custom element itself, and look up
+        // children lazily inside the handler (not here). During
+        // initial HTML parsing this element can be upgraded the
+        // instant its opening tag is seen, before its own children
+        // (swatches, image, price) have been parsed yet — querying
+        // for them here would silently find nothing.
+        this.addEventListener('click', (event) => {
+          const swatch = event.target.closest('.mujo-pc-swatch');
+          if (swatch && this.contains(swatch)) {
+            this.selectSwatch(swatch);
+          }
+        });
+
+        // The secondary hover image is shown via CSS :hover, which
+        // stays active while the mouse is over a swatch (since the
+        // swatch is inside the card). Without this, a swatch click
+        // would update the primary image's src correctly but it'd
+        // stay invisible (opacity: 0 from the hover rule) until the
+        // mouse actually left and re-entered the card. Clearing the
+        // inline override on mouseleave hands control back to the
+        // normal CSS hover behavior for the next hover.
+        this.addEventListener('mouseleave', () => {
+          this.clearImageOverride();
+        });
+      }
+
+      clearImageOverride() {
+        const primary = this.querySelector('.mujo-pc-image-primary');
+        const secondary = this.querySelector('.mujo-pc-image-secondary');
+        if (primary) primary.style.opacity = '';
+        if (secondary) secondary.style.opacity = '';
+      }
+
+      selectSwatch(swatch) {
+        const swatches = this.querySelectorAll('.mujo-pc-swatch');
+        const image = this.querySelector('.mujo-pc-image-primary');
+        const secondaryImage = this.querySelector('.mujo-pc-image-secondary');
+        const priceEl = this.querySelector('.mujo-pc-price');
+        const variantInput = this.querySelector('.mujo-pc-variant-id');
+        const addButton = this.querySelector('.mujo-pc-add-to-bag');
+
+        swatches.forEach((s) => {
+          const isSelected = s === swatch;
+          s.classList.toggle('is-selected', isSelected);
+          s.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        });
+
+        const available = swatch.dataset.available === 'true';
+        const colorLabel = swatch.getAttribute('aria-label') || '';
+
+        if (image && swatch.dataset.image) {
+          image.src = swatch.dataset.image;
+          if (swatch.dataset.imageSrcset) {
+            image.srcset = swatch.dataset.imageSrcset;
+          }
+          // Force the just-updated image visible right now, overriding
+          // whatever the CSS :hover rule currently has it set to.
+          image.style.opacity = '1';
+          if (secondaryImage) secondaryImage.style.opacity = '0';
+        }
+
+        if (variantInput) {
+          variantInput.value = swatch.dataset.variantId;
+        }
+
+        if (addButton) {
+          addButton.disabled = !available;
+          const baseLabel = available ? 'Add to Bag' : 'Sold out';
+          addButton.setAttribute('aria-label', baseLabel + (colorLabel ? ' — ' + colorLabel : ''));
+        }
+
+        if (priceEl) {
+          const price = swatch.dataset.price;
+          const comparePrice = swatch.dataset.comparePrice;
+          if (comparePrice) {
+            priceEl.innerHTML =
+              '<span class="mujo-pc-price-sale">' + price + '</span> ' +
+              '<s class="mujo-pc-price-compare">' + comparePrice + '</s>';
+          } else {
+            priceEl.innerHTML = '<span class="mujo-pc-price-regular">' + price + '</span>';
+          }
+        }
+      }
+    }
+    customElements.define('mujo-product-card', MujoProductCard);
+  }
+</script>
+
+{%- style -%}
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&family=Urbanist:wght@400;500;600&display=swap');
+
+  .mujo-best-sellers-{{ section.id }} {
+    background: #FAFAF7;
+    padding: 64px 0;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-inner {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 5vw;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-heading {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(28px, 3vw, 40px);
+    color: #1B1A18;
+    margin: 0;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-shopall {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #1B1A18;
+    text-decoration: none;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-shopall:hover {
+    border-color: #1B1A18;
+  }
+
+  .mujo-best-sellers-{{ section.id }} slider-component {
+    display: block;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-track {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    margin: 0;
+    padding: 0 48px 8px;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-track.slider {
+    overflow-x: auto;
+    scroll-padding-left: 48px;
+    scroll-padding-right: 48px;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-bs-slide {
+    flex: 0 0 auto;
+    width: calc((100% - (3 * 28px)) / 4);
+    scroll-snap-align: start;
+  }
+
+  @media screen and (max-width: 989px) {
+    .mujo-best-sellers-{{ section.id }} .mujo-bs-slide {
+      width: calc((100% - 28px) / 2.4);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .mujo-best-sellers-{{ section.id }} {
+      padding: 44px 0;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-bs-inner {
+      padding: 0 24px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-bs-header {
+      margin-bottom: 20px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-bs-slide {
+      width: 54%;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-bs-track {
+      padding: 0 20px 8px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-bs-track.slider {
+      scroll-padding-left: 20px;
+      scroll-padding-right: 20px;
+    }
+  }
+
+  /* Unified editorial product card: image and info are one
+     continuous block, no gap/border/shadow between them. */
+  .mujo-best-sellers-{{ section.id }} .mujo-pc {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-media {
+    position: relative;
+    overflow: hidden;
+    background-color: #E5E2D9;
+    aspect-ratio: 4 / 5;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-media-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    transition: opacity 0.4s ease;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-image-secondary {
+    opacity: 0;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    background: #C9A7E8;
+    color: #1B1A18;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 2px;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-info {
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-title {
+    font-family: 'Urbanist', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0.01em;
+    color: #1B1A18;
+    text-decoration: none;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-subtitle {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 12px;
+    color: #8A8579;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-price {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 13px;
+    color: #6B6862;
+    margin-top: 2px;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-price-sale {
+    color: #1B1A18;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-price-compare {
+    color: #A6A29A;
+    margin-left: 4px;
+  }
+
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-swatches {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-swatch {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border-radius: 50%;
+    position: relative;
+    border: 1px solid rgba(27, 26, 24, 0.15);
+    background-color: #E5E2D9;
+    cursor: pointer;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-swatch.is-selected::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border: 1px solid #1B1A18;
+    border-radius: 50%;
+  }
+
+  /* Add to Bag: small icon button anchored top-right of the image.
+     Revealed on hover on desktop; always visible on touch devices. */
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag-wrap {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 3;
+    margin: 0;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-form {
+    margin: 0;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag:hover {
+    transform: translateY(0) scale(1.08);
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag:disabled {
+    opacity: 0.35 !important;
+    cursor: default;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag-icon {
+    display: flex;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag .loading__spinner {
+    display: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mujo-best-sellers-{{ section.id }} .mujo-pc:hover .mujo-pc-add-to-bag {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (hover: none) {
+    .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mujo-best-sellers-{{ section.id }} .mujo-pc:hover .mujo-pc-image-primary {
+      opacity: 0;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-pc:hover .mujo-pc-image-secondary {
+      opacity: 1;
+    }
+  }
+
+  .mujo-best-sellers-{{ section.id }} .slider-buttons {
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .mujo-best-sellers-{{ section.id }} .mujo-pc-badge {
+      font-size: 9px;
+      padding: 4px 8px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-pc-title {
+      font-size: 13px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-pc-subtitle {
+      font-size: 11px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-pc-price {
+      font-size: 12px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-pc-swatch {
+      width: 14px;
+      height: 14px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag {
+      width: 48px;
+      height: 48px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign product_count = section.blocks.size
+  if product_count == 0
+    assign product_count = collections.all.products.size | at_most: 8
+  endif
+
+  assign show_slider = false
+  if product_count > 4
+    assign show_slider = true
+  endif
+-%}
+
+<div class="mujo-best-sellers-{{ section.id }}">
+  <div class="mujo-bs-inner">
+    <div class="mujo-bs-header">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="mujo-bs-heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.shop_all_link != blank -%}
+        <a href="{{ section.settings.shop_all_link }}" class="mujo-bs-shopall">
+          {{ section.settings.shop_all_label | default: 'Shop All' }}
+          <span aria-hidden="true">→</span>
+        </a>
+      {%- endif -%}
+    </div>
+
+    {%- if product_count > 0 -%}
+      <slider-component>
+        <ul
+          id="Slider-{{ section.id }}"
+          class="mujo-bs-track{% if show_slider %} slider slider--mobile slider--tablet{% endif %}"
+          role="list"
+          aria-label="{{ 'general.slider.name' | t }}"
+        >
+          {%- if section.blocks.size > 0 -%}
+            {%- for block in section.blocks limit: 8 -%}
+              {%- assign product = block.settings.product -%}
+              {%- assign lazy_load = false -%}
+              {%- if forloop.index > 2 -%}
+                {%- assign lazy_load = true -%}
+              {%- endif -%}
+              {%- if product != blank -%}
+                <li
+                  id="Slide-{{ section.id }}-{{ forloop.index }}"
+                  class="mujo-bs-slide{% if show_slider %} slider__slide{% endif %}"
+                  {{ block.shopify_attributes }}
+                >
+                  {% render 'mujo-product-card', product: product, section_id: section.id, lazy_load: lazy_load, show_badge: section.settings.show_badge, badge_text: section.settings.badge_text %}
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- for product in collections.all.products limit: 8 -%}
+              {%- assign lazy_load = false -%}
+              {%- if forloop.index > 2 -%}
+                {%- assign lazy_load = true -%}
+              {%- endif -%}
+              <li
+                id="Slide-{{ section.id }}-{{ forloop.index }}"
+                class="mujo-bs-slide{% if show_slider %} slider__slide{% endif %}"
+              >
+                {% render 'mujo-product-card', product: product, section_id: section.id, lazy_load: lazy_load, show_badge: section.settings.show_badge, badge_text: section.settings.badge_text %}
+              </li>
+            {%- endfor -%}
+          {%- endif -%}
+        </ul>
+        {%- if show_slider -%}
+          <div class="slider-buttons">
+            <button
+              type="button"
+              class="slider-button slider-button--prev"
+              name="previous"
+              aria-label="{{ 'general.slider.previous_slide' | t }}"
+              aria-controls="Slider-{{ section.id }}"
+            >
+              <span class="svg-wrapper">{{- 'icon-caret.svg' | inline_asset_content -}}</span>
+            </button>
+            <div class="slider-counter caption">
+              <span class="slider-counter--current">1</span>
+              <span aria-hidden="true"> / </span>
+              <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+              <span class="slider-counter--total">{{ product_count }}</span>
+            </div>
+            <button
+              type="button"
+              class="slider-button slider-button--next"
+              name="next"
+              aria-label="{{ 'general.slider.next_slide' | t }}"
+              aria-controls="Slider-{{ section.id }}"
+            >
+              <span class="svg-wrapper">{{- 'icon-caret.svg' | inline_asset_content -}}</span>
+            </button>
+          </div>
+        {%- endif -%}
+      </slider-component>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Best Sellers",
+  "tag": "section",
+  "class": "section mujo-best-sellers-section",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Best Sellers"
+    },
+    {
+      "type": "text",
+      "id": "shop_all_label",
+      "label": "\"Shop All\" label",
+      "default": "Shop All"
+    },
+    {
+      "type": "url",
+      "id": "shop_all_link",
+      "label": "\"Shop All\" link",
+      "info": "Usually your Shop All collection or page"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badge",
+      "label": "Show badge on product cards",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "Bestseller"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Best Sellers"
+    }
+  ]
+}
+{% endschema %}
