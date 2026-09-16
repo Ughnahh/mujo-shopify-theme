@@ -1,7 +1,8 @@
 {%- doc -%}
-  MUJŌ CO. — unified editorial product card. Image + title/details/
-  price/swatches form one continuous card, no gap or border between
-  the image and the info block below it.
+  MUJŌ CO. — full-bleed editorial product card. The product photo
+  fills the entire card as its background; title/details/price/
+  swatches are overlaid near the bottom on a dark gradient scrim for
+  legibility.
 
   Desktop hover: the image crossfades to the product's secondary
   photo (product.media[1]), and a small Add to Bag icon (bag + plus)
@@ -76,6 +77,8 @@
       {%- endif -%}
     </a>
 
+    <div class="mujo-pc-scrim" aria-hidden="true"></div>
+
     {%- if default_variant -%}
       <product-form class="mujo-pc-add-to-bag-wrap" data-section-id="{{ section_id }}">
         {%- form 'product',
@@ -116,7 +119,6 @@
         {%- endform -%}
       </product-form>
     {%- endif -%}
-  </div>
 
   <div class="mujo-pc-info">
     <a href="{{ product.url }}" class="mujo-pc-title">{{ product.title | escape }}</a>
@@ -158,5 +160,6 @@
         {%- endfor -%}
       </div>
     {%- endif -%}
+  </div>
   </div>
 </mujo-product-card>
