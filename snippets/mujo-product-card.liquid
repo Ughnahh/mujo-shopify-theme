@@ -9,9 +9,10 @@
   when both are present.
 
   Desktop hover: the image crossfades to the product's secondary
-  photo (product.media[1]), and a small Add to Bag icon (bag + plus)
-  reveals in the top-right corner of the image. Touch devices show
-  the icon permanently, since hover doesn't exist there.
+  photo (product.media[1]), and a plain, transparent "Add to Cart"
+  text link reveals below the color swatches — no fill, border, or
+  box, just underlined text. Touch devices show it permanently, since
+  hover doesn't exist there.
 
   Clicking a color swatch swaps the card's image to that variant's
   photo IMMEDIATELY (even while still hovering the card), updates the
@@ -94,47 +95,6 @@
 
     <div class="mujo-pc-scrim" aria-hidden="true"></div>
 
-    {%- if default_variant -%}
-      <product-form class="mujo-pc-add-to-bag-wrap" data-section-id="{{ section_id }}">
-        {%- form 'product',
-          product,
-          id: form_id,
-          class: 'mujo-pc-form',
-          novalidate: 'novalidate',
-          data-type: 'add-to-cart-form'
-        -%}
-          <input
-            type="hidden"
-            name="id"
-            class="mujo-pc-variant-id product-variant-id"
-            value="{{ default_variant.id }}"
-            {%- unless default_variant.available %}
-              disabled
-            {%- endunless %}
-          >
-          <button
-            type="submit"
-            name="add"
-            class="mujo-pc-add-to-bag"
-            aria-label="{{ 'products.product.add_to_cart' | t }} — {{ product.title | escape }}"
-            {%- unless default_variant.available %}
-              disabled
-            {%- endunless %}
-          >
-            <span class="mujo-pc-add-to-bag-icon" aria-hidden="true">
-              <svg viewBox="0 0 20 20" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4.5 6.5H15.5L14.7 17H5.3L4.5 6.5Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/>
-                <path d="M7 6.5V5.5a3 3 0 0 1 6 0v1" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
-                <path d="M15.5 12.5v4M13.5 14.5h4" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
-              </svg>
-            </span>
-            <span class="sold-out-message hidden">{{ 'products.product.sold_out' | t }}</span>
-            {%- render 'loading-spinner' -%}
-          </button>
-        {%- endform -%}
-      </product-form>
-    {%- endif -%}
-
   <div class="mujo-pc-info">
     <a href="{{ product.url }}" class="mujo-pc-title">{{ product.title | escape }}</a>
     {%- if subtitle != blank -%}
@@ -174,6 +134,47 @@
           {%- endunless -%}
         {%- endfor -%}
       </div>
+    {%- endif -%}
+
+    {%- if default_variant -%}
+      <product-form class="mujo-pc-add-to-bag-wrap" data-section-id="{{ section_id }}">
+        {%- form 'product',
+          product,
+          id: form_id,
+          class: 'mujo-pc-form',
+          novalidate: 'novalidate',
+          data-type: 'add-to-cart-form'
+        -%}
+          <input
+            type="hidden"
+            name="id"
+            class="mujo-pc-variant-id product-variant-id"
+            value="{{ default_variant.id }}"
+            {%- unless default_variant.available %}
+              disabled
+            {%- endunless %}
+          >
+          <button
+            type="submit"
+            name="add"
+            class="mujo-pc-add-to-bag"
+            aria-label="{{ 'products.product.add_to_cart' | t }} — {{ product.title | escape }}"
+            {%- unless default_variant.available %}
+              disabled
+            {%- endunless %}
+          >
+            <span class="mujo-pc-add-to-bag-label">
+              {%- if default_variant.available -%}
+                Add to Cart
+              {%- else -%}
+                {{ 'products.product.sold_out' | t }}
+              {%- endif -%}
+            </span>
+            <span class="sold-out-message hidden">{{ 'products.product.sold_out' | t }}</span>
+            {%- render 'loading-spinner' -%}
+          </button>
+        {%- endform -%}
+      </product-form>
     {%- endif -%}
   </div>
   </div>
