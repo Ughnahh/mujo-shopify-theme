@@ -1,8 +1,12 @@
 {%- comment -%}
-  MUJŌ CO. — dedicated main collection grid section. Renders the
-  'mujo-product-card' snippet exclusively; it does not use Dawn's
-  default 'card-product' snippet or its component-card/quick-add
-  assets at all.
+  MUJŌ CO. — standalone "Shop All Products" page. Fully separate from
+  the homepage Best Seller / New In sections and from any collection
+  template: this only ever renders on the dedicated Page it's attached
+  to, so nothing here can affect any other page.
+
+  Always lists every product in the store (collections.all.products) —
+  the category nav at the top is just links out to real collections,
+  it doesn't filter this grid.
 {%- endcomment -%}
 
 {{ 'template-collection.css' | asset_url | stylesheet_tag }}
@@ -15,11 +19,10 @@
     class MujoProductCard extends HTMLElement {
       connectedCallback() {
         // Delegate from the custom element itself, and look up
-        // children lazily inside the handler (not here). During
+        // children lazily inside the handler (not here) — during
         // initial HTML parsing this element can be upgraded the
         // instant its opening tag is seen, before its own children
-        // (swatches, image, price) have been parsed yet — querying
-        // for them here would silently find nothing.
+        // (swatches, image, price) have been parsed yet.
         this.addEventListener('click', (event) => {
           const swatch = event.target.closest('.mujo-pc-swatch');
           if (swatch && this.contains(swatch)) {
@@ -27,14 +30,6 @@
           }
         });
 
-        // The secondary hover image is shown via CSS :hover, which
-        // stays active while the mouse is over a swatch (since the
-        // swatch is inside the card). Without this, a swatch click
-        // would update the primary image's src correctly but it'd
-        // stay invisible (opacity: 0 from the hover rule) until the
-        // mouse actually left and re-entered the card. Clearing the
-        // inline override on mouseleave hands control back to the
-        // normal CSS hover behavior for the next hover.
         this.addEventListener('mouseleave', () => {
           this.clearImageOverride();
         });
@@ -127,7 +122,9 @@
     justify-content: center;
     text-align: center;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(27, 26, 24, 0.1);
     font-family: 'Urbanist', sans-serif;
     font-size: 14px;
   }
@@ -147,57 +144,6 @@
   }
   .section-{{ section.id }}-padding .mujo-category-sep {
     color: #CFCCC3;
-  }
-
-  /* Toolbar: reskin Dawn's existing sort/count controls to the
-     minimal MUJŌ look, same markup/IDs so facets.js's AJAX
-     re-render keeps working. */
-  .section-{{ section.id }}-padding .facets-vertical-sort {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin: 0 0 24px;
-    padding: 0 0 16px;
-    border-bottom: 1px solid rgba(27, 26, 24, 0.1);
-    max-width: none;
-  }
-  .section-{{ section.id }}-padding .facets-vertical-form {
-    display: contents;
-  }
-  .section-{{ section.id }}-padding .facet-filters.sorting {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    order: 2;
-  }
-  .section-{{ section.id }}-padding .facet-filters__label {
-    margin: 0;
-    font-family: 'Urbanist', sans-serif;
-    font-size: 13px;
-    color: #6B6A66;
-  }
-  .section-{{ section.id }}-padding .facet-filters__field .select {
-    border: none;
-  }
-  .section-{{ section.id }}-padding .facet-filters__sort {
-    font-family: 'Urbanist', sans-serif;
-    font-size: 14px;
-    color: #1B1A18;
-    padding: 6px 24px 6px 10px;
-    border-radius: 4px;
-    border: 1px solid rgba(27, 26, 24, 0.2);
-    background: #FAFAF7;
-  }
-  .section-{{ section.id }}-padding .product-count-vertical {
-    order: 1;
-    font-family: 'Urbanist', sans-serif;
-    font-size: 14px;
-    color: #6B6A66;
-  }
-  .section-{{ section.id }}-padding .product-count__text {
-    margin: 0;
-    font-weight: 400;
   }
 
   .section-{{ section.id }}-padding .product-grid {
@@ -421,11 +367,12 @@
     }
   }
 {%- endstyle -%}
+
 <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
 
   {%- assign nav_blocks = section.blocks | where: 'type', 'nav_link' -%}
   {%- if nav_blocks.size > 0 -%}
-    <nav class="mujo-category-nav page-width" aria-label="{{ 'sections.collection_template.title' | t }}">
+    <nav class="mujo-category-nav page-width" aria-label="Shop by category">
       {%- for block in nav_blocks -%}
         <a
           href="{{ block.settings.link | default: '#' }}"
@@ -441,15 +388,8 @@
     </nav>
   {%- endif -%}
 
-  {%- if section.settings.use_manual_products and section.blocks.size > 0 -%}
-
-    {%- comment -%}
-      MANUAL MODE: use products chosen in blocks, no paginate, no filters
-    {%- endcomment -%}
-
-    <div
-      class="collection{% if section.settings.filter_type != 'vertical' %} page-width{% endif %}"
-    >
+  {%- paginate collections.all.products by section.settings.products_per_page -%}
+    <div class="collection page-width">
       <div class="loading-overlay gradient"></div>
       <ul
         id="product-grid"
@@ -459,207 +399,51 @@
           grid--{{ section.settings.columns_desktop }}-col-desktop
         "
       >
-        {%- assign product_blocks = section.blocks | where: 'type', 'product' -%}
-        {% for block in product_blocks %}
-          {% assign product = all_products[block.settings.product] %}
-          {% if product %}
-            {% assign lazy_load = false %}
-            {%- if forloop.index > 2 -%}
-              {%- assign lazy_load = true -%}
-            {%- endif -%}
-            <li
-              class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-              {% if settings.animations_reveal_on_scroll %}
-                data-cascade
-                style="--animation-order: {{ forloop.index }};"
-              {% endif %}
-              {{ block.shopify_attributes }}
-            >
-              {% render 'mujo-product-card',
-                product: product,
-                section_id: section.id,
-                lazy_load: lazy_load,
-                show_badge: section.settings.show_badge,
-                badge_text: section.settings.badge_text,
-                add_to_cart_style: 'text'
-              %}
-            </li>
-          {% endif %}
-        {% endfor %}
-      </ul>
-    </div>
-
-  {%- else -%}
-
-    {%- comment -%}
-      NORMAL MODE: original collection behaviour (filters + sorting + paginate)
-    {%- endcomment -%}
-
-    {%- paginate collection.products by section.settings.products_per_page -%}
-      {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
-      {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}
-        <facet-filters-form class="facets facets-vertical-sort page-width small-hide">
-          <form class="facets-vertical-form" id="FacetSortForm">
-            <div class="facet-filters sorting caption">
-              <div class="facet-filters__field">
-                <h2 class="facet-filters__label caption-large text-body">
-                  <label for="SortBy">{{ 'products.facets.sort_by_label' | t }}</label>
-                </h2>
-                <div class="select">
-                  {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
-                  <select
-                    name="sort_by"
-                    class="facet-filters__sort select__select caption-large"
-                    id="SortBy"
-                    aria-describedby="a11y-refresh-page-message"
-                  >
-                    {%- for option in collection.sort_options -%}
-                      <option
-                        value="{{ option.value | escape }}"
-                        {% if option.value == sort_by %}
-                          selected="selected"
-                        {% endif %}
-                      >
-                        {{ option.name | escape }}
-                      </option>
-                    {%- endfor -%}
-                  </select>
-                  <span class="svg-wrapper">
-                    {{- 'icon-caret.svg' | inline_asset_content -}}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div class="product-count-vertical light" role="status">
-              <h2 class="product-count__text text-body">
-                <span id="ProductCountDesktop">
-                  {%- if collection.results_count -%}
-                    {{
-                      'templates.search.results_with_count'
-                      | t: terms: collection.terms, count: collection.results_count
-                    }}
-                  {%- elsif collection.products_count == collection.all_products_count -%}
-                    {{ 'products.facets.product_count_simple' | t: count: collection.products_count }}
-                  {%- else -%}
-                    {{
-                      'products.facets.product_count'
-                      | t: product_count: collection.products_count, count: collection.all_products_count
-                    }}
-                  {%- endif -%}
-                </span>
-              </h2>
-              {%- render 'loading-spinner' -%}
-            </div>
-          </form>
-        </facet-filters-form>
-      {%- endif -%}
-
-      <div class="{% if section.settings.filter_type == 'vertical' %} facets-vertical page-width{% endif %}">
-        {{ 'component-facets.css' | asset_url | stylesheet_tag }}
-        <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
-        {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
-          <aside
-            aria-labelledby="verticalTitle"
-            class="facets-wrapper{% unless section.settings.enable_filtering %} facets-wrapper--no-filters{% endunless %}{% if section.settings.filter_type != 'vertical' %} page-width{% endif %}"
-            id="main-collection-filters"
-            data-id="{{ section.id }}"
-          >
-            {% render 'facets',
-              results: collection,
-              enable_filtering: section.settings.enable_filtering,
-              enable_sorting: section.settings.enable_sorting,
-              filter_type: section.settings.filter_type,
-              paginate: paginate
-            %}
-          </aside>
-        {%- endif -%}
-
-        <div
-          class="product-grid-container{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-          id="ProductGridContainer"
-          {% if settings.animations_reveal_on_scroll %}
-            data-cascade
-          {% endif %}
-        >
-          {%- if collection.products.size == 0 -%}
-            <div class="collection collection--empty page-width" id="product-grid" data-id="{{ section.id }}">
-              <div class="loading-overlay gradient"></div>
-              <div class="title-wrapper center">
-                <h2 class="title title--primary">
-                  {{ 'sections.collection_template.empty' | t -}}
-                  <br>
-                  {{
-                    'sections.collection_template.use_fewer_filters_html'
-                    | t: link: collection.url, class: 'underlined-link link'
-                  }}
-                </h2>
-              </div>
-            </div>
-          {%- else -%}
-            <div
-              class="collection{% if section.settings.filter_type != 'vertical' %} page-width{% endif %}"
-            >
-              <div class="loading-overlay gradient"></div>
-              <ul
-                id="product-grid"
-                data-id="{{ section.id }}"
-                class="
-                  grid product-grid grid--{{ section.settings.columns_mobile }}-col-tablet-down
-                  grid--{{ section.settings.columns_desktop }}-col-desktop
-                "
-              >
-                {%- for product in collection.products -%}
-                  {% assign lazy_load = false %}
-                  {%- if forloop.index > 2 -%}
-                    {%- assign lazy_load = true -%}
-                  {%- endif -%}
-                  <li
-                    class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-                    {% if settings.animations_reveal_on_scroll %}
-                      data-cascade
-                      style="--animation-order: {{ forloop.index }};"
-                    {% endif %}
-                  >
-                    {% render 'mujo-product-card',
-                      product: product,
-                      section_id: section.id,
-                      lazy_load: lazy_load,
-                      show_badge: section.settings.show_badge,
-                      badge_text: section.settings.badge_text,
-                      add_to_cart_style: 'text'
-                    %}
-                  </li>
-                {%- endfor -%}
-              </ul>
-
-              {%- if paginate.pages > 1 -%}
-                {% render 'pagination', paginate: paginate, anchor: '' %}
-              {%- endif -%}
-            </div>
+        {%- for product in collections.all.products -%}
+          {%- assign lazy_load = false -%}
+          {%- if forloop.index > 2 -%}
+            {%- assign lazy_load = true -%}
           {%- endif -%}
-        </div>
-      </div>
-    {%- endpaginate -%}
+          <li
+            class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            {% if settings.animations_reveal_on_scroll %}
+              data-cascade
+              style="--animation-order: {{ forloop.index }};"
+            {% endif %}
+          >
+            {% render 'mujo-product-card',
+              product: product,
+              section_id: section.id,
+              lazy_load: lazy_load,
+              show_badge: section.settings.show_badge,
+              badge_text: section.settings.badge_text,
+              add_to_cart_style: 'text'
+            %}
+          </li>
+        {%- endfor -%}
+      </ul>
 
-  {%- endif -%}
+      {%- if paginate.pages > 1 -%}
+        {% render 'pagination', paginate: paginate, anchor: '' %}
+      {%- endif -%}
+    </div>
+  {%- endpaginate -%}
 
 </div>
 
-
 {% schema %}
 {
-  "name": "MUJŌ Collection Grid",
+  "name": "MUJŌ Shop All",
   "class": "section",
   "settings": [
     {
       "type": "range",
       "id": "products_per_page",
       "min": 8,
-      "max": 36,
+      "max": 48,
       "step": 4,
-      "default": 16,
-      "label": "t:sections.main-collection-product-grid.settings.products_per_page.label"
+      "default": 24,
+      "label": "Products per page"
     },
     {
       "type": "range",
@@ -668,22 +452,16 @@
       "max": 6,
       "step": 1,
       "default": 4,
-      "label": "t:sections.main-collection-product-grid.settings.columns_desktop.label"
+      "label": "Number of columns on desktop"
     },
     {
       "type": "select",
       "id": "columns_mobile",
       "default": "2",
-      "label": "t:sections.main-collection-product-grid.settings.columns_mobile.label",
+      "label": "Number of columns on mobile",
       "options": [
-        {
-          "value": "1",
-          "label": "t:sections.main-collection-product-grid.settings.columns_mobile.options__1.label"
-        },
-        {
-          "value": "2",
-          "label": "t:sections.main-collection-product-grid.settings.columns_mobile.options__2.label"
-        }
+        { "value": "1", "label": "1 column" },
+        { "value": "2", "label": "2 columns" }
       ]
     },
     {
@@ -695,7 +473,7 @@
     },
     {
       "type": "header",
-      "content": "t:sections.main-collection-product-grid.settings.header__3.content"
+      "content": "Product card badge"
     },
     {
       "type": "checkbox",
@@ -708,43 +486,6 @@
       "id": "badge_text",
       "label": "Badge text",
       "default": "New"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.main-collection-product-grid.settings.header__1.content"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_filtering",
-      "default": true,
-      "label": "t:sections.main-collection-product-grid.settings.enable_filtering.label",
-      "info": "t:sections.main-collection-product-grid.settings.enable_filtering.info"
-    },
-    {
-      "type": "select",
-      "id": "filter_type",
-      "options": [
-        {
-          "value": "horizontal",
-          "label": "t:sections.main-collection-product-grid.settings.filter_type.options__1.label"
-        },
-        {
-          "value": "vertical",
-          "label": "t:sections.main-collection-product-grid.settings.filter_type.options__2.label"
-        },
-        {
-          "value": "drawer",
-          "label": "t:sections.main-collection-product-grid.settings.filter_type.options__3.label"
-        }
-      ],
-      "default": "horizontal",
-      "label": "t:sections.main-collection-product-grid.settings.filter_type.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_sorting",
-      "default": true,
-      "label": "t:sections.main-collection-product-grid.settings.enable_sorting.label"
     },
     {
       "type": "header",
@@ -769,16 +510,6 @@
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
       "default": 36
-    },
-    {
-      "type": "header",
-      "content": "Manual product selection"
-    },
-    {
-      "type": "checkbox",
-      "id": "use_manual_products",
-      "default": false,
-      "label": "Use manually selected products instead of collection"
     }
   ],
   "blocks": [
@@ -798,16 +529,18 @@
           "label": "Link"
         }
       ]
-    },
+    }
+  ],
+  "presets": [
     {
-      "type": "product",
-      "name": "Product",
-      "settings": [
-        {
-          "type": "product",
-          "id": "product",
-          "label": "Product"
-        }
+      "name": "MUJŌ Shop All",
+      "blocks": [
+        { "type": "nav_link", "settings": { "label": "Best Seller" } },
+        { "type": "nav_link", "settings": { "label": "New In" } },
+        { "type": "nav_link", "settings": { "label": "Collection by Artist" } },
+        { "type": "nav_link", "settings": { "label": "Necklaces" } },
+        { "type": "nav_link", "settings": { "label": "Rings" } },
+        { "type": "nav_link", "settings": { "label": "Earrings" } }
       ]
     }
   ]

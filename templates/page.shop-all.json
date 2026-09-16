@@ -1,0 +1,34 @@
+{
+  "sections": {
+    "main": {
+      "type": "mujo-shop-all",
+      "blocks": {
+        "nav_best_seller": { "type": "nav_link", "settings": { "label": "Best Seller", "link": "" } },
+        "nav_new_in": { "type": "nav_link", "settings": { "label": "New In", "link": "" } },
+        "nav_artist": { "type": "nav_link", "settings": { "label": "Collection by Artist", "link": "" } },
+        "nav_necklaces": { "type": "nav_link", "settings": { "label": "Necklaces", "link": "" } },
+        "nav_rings": { "type": "nav_link", "settings": { "label": "Rings", "link": "" } },
+        "nav_earrings": { "type": "nav_link", "settings": { "label": "Earrings", "link": "" } }
+      },
+      "block_order": [
+        "nav_best_seller",
+        "nav_new_in",
+        "nav_artist",
+        "nav_necklaces",
+        "nav_rings",
+        "nav_earrings"
+      ],
+      "settings": {
+        "products_per_page": 24,
+        "columns_desktop": 4,
+        "columns_mobile": "2",
+        "color_scheme": "scheme-1",
+        "show_badge": false,
+        "badge_text": "New",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    }
+  },
+  "order": ["main"]
+}
