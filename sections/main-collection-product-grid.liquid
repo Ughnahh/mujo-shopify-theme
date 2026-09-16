@@ -1,28 +1,108 @@
 {{ 'template-collection.css' | asset_url | stylesheet_tag }}
-{{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 
-{% if section.settings.image_shape == 'blob' %}
-  {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
-{%- endif -%}
+{%- comment -%}
+  Card style switched to the MUJŌ editorial card (same as the New In
+  section) — component-card.css / quick-add.css / quick-add-bulk.css
+  and their scripts are no longer needed since this grid no longer
+  renders the theme's default 'card-product' snippet.
+{%- endcomment -%}
 
-{%- unless section.settings.quick_add == 'none' -%}
-  {{ 'quick-add.css' | asset_url | stylesheet_tag }}
-{%- endunless -%}
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
 
-{%- if section.settings.quick_add == 'standard' -%}
-  <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
-  <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
-{%- endif -%}
+<script>
+  if (!customElements.get('mujo-product-card')) {
+    class MujoProductCard extends HTMLElement {
+      connectedCallback() {
+        // Delegate from the custom element itself, and look up
+        // children lazily inside the handler (not here). During
+        // initial HTML parsing this element can be upgraded the
+        // instant its opening tag is seen, before its own children
+        // (swatches, image, price) have been parsed yet — querying
+        // for them here would silently find nothing.
+        this.addEventListener('click', (event) => {
+          const swatch = event.target.closest('.mujo-pc-swatch');
+          if (swatch && this.contains(swatch)) {
+            this.selectSwatch(swatch);
+          }
+        });
 
-{%- if section.settings.quick_add == 'bulk' -%}
-  <script src="{{ 'quick-add-bulk.js' | asset_url }}" defer="defer"></script>
-  <script src="{{ 'quantity-popover.js' | asset_url }}" defer="defer"></script>
-  <script src="{{ 'price-per-item.js' | asset_url }}" defer="defer"></script>
-  <script src="{{ 'quick-order-list.js' | asset_url }}" defer="defer"></script>
-{%- endif -%}
+        // The secondary hover image is shown via CSS :hover, which
+        // stays active while the mouse is over a swatch (since the
+        // swatch is inside the card). Without this, a swatch click
+        // would update the primary image's src correctly but it'd
+        // stay invisible (opacity: 0 from the hover rule) until the
+        // mouse actually left and re-entered the card. Clearing the
+        // inline override on mouseleave hands control back to the
+        // normal CSS hover behavior for the next hover.
+        this.addEventListener('mouseleave', () => {
+          this.clearImageOverride();
+        });
+      }
+
+      clearImageOverride() {
+        const primary = this.querySelector('.mujo-pc-image-primary');
+        const secondary = this.querySelector('.mujo-pc-image-secondary');
+        if (primary) primary.style.opacity = '';
+        if (secondary) secondary.style.opacity = '';
+      }
+
+      selectSwatch(swatch) {
+        const swatches = this.querySelectorAll('.mujo-pc-swatch');
+        const image = this.querySelector('.mujo-pc-image-primary');
+        const secondaryImage = this.querySelector('.mujo-pc-image-secondary');
+        const priceEl = this.querySelector('.mujo-pc-price');
+        const variantInput = this.querySelector('.mujo-pc-variant-id');
+        const addButton = this.querySelector('.mujo-pc-add-to-bag');
+
+        swatches.forEach((s) => {
+          const isSelected = s === swatch;
+          s.classList.toggle('is-selected', isSelected);
+          s.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        });
+
+        const available = swatch.dataset.available === 'true';
+        const colorLabel = swatch.getAttribute('aria-label') || '';
+
+        if (image && swatch.dataset.image) {
+          image.src = swatch.dataset.image;
+          if (swatch.dataset.imageSrcset) {
+            image.srcset = swatch.dataset.imageSrcset;
+          }
+          image.style.opacity = '1';
+          if (secondaryImage) secondaryImage.style.opacity = '0';
+        }
+
+        if (variantInput) {
+          variantInput.value = swatch.dataset.variantId;
+        }
+
+        if (addButton) {
+          addButton.disabled = !available;
+          const baseLabel = available ? 'Add to Bag' : 'Sold out';
+          addButton.setAttribute('aria-label', baseLabel + (colorLabel ? ' — ' + colorLabel : ''));
+        }
+
+        if (priceEl) {
+          const price = swatch.dataset.price;
+          const comparePrice = swatch.dataset.comparePrice;
+          if (comparePrice) {
+            priceEl.innerHTML =
+              '<span class="mujo-pc-price-sale">' + price + '</span> ' +
+              '<s class="mujo-pc-price-compare">' + comparePrice + '</s>';
+          } else {
+            priceEl.innerHTML = '<span class="mujo-pc-price-regular">' + price + '</span>';
+          }
+        }
+      }
+    }
+    customElements.define('mujo-product-card', MujoProductCard);
+  }
+</script>
 
 {%- style -%}
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&family=Urbanist:wght@400;500;600&display=swap');
+
   .section-{{ section.id }}-padding {
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
@@ -34,31 +114,333 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
-.section-{{ section.id }}-padding .product-grid {
-  gap: 0;
-}
 
-.section-{{ section.id }}-padding .grid__item {
-  padding: 1rem;
-  background: transparent;
-}
+  /* Category nav: plain text links, no button chrome */
+  .section-{{ section.id }}-padding .mujo-category-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 14px;
+  }
+  .section-{{ section.id }}-padding .mujo-category-link {
+    color: #6B6A66;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .section-{{ section.id }}-padding .mujo-category-link:hover {
+    color: #1B1A18;
+  }
+  .section-{{ section.id }}-padding .mujo-category-link.is-active {
+    color: #1B1A18;
+    font-weight: 600;
+    border-bottom-color: #1B1A18;
+  }
+  .section-{{ section.id }}-padding .mujo-category-sep {
+    color: #CFCCC3;
+  }
 
-.section-{{ section.id }}-padding .card-wrapper {
-  height: 100%;
-}
+  /* Toolbar: reskin Dawn's existing sort/count controls to the
+     minimal MUJŌ look, same markup/IDs so facets.js's AJAX
+     re-render keeps working. */
+  .section-{{ section.id }}-padding .facets-vertical-sort {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 24px;
+    padding: 0 0 16px;
+    border-bottom: 1px solid rgba(27, 26, 24, 0.1);
+    max-width: none;
+  }
+  .section-{{ section.id }}-padding .facets-vertical-form {
+    display: contents;
+  }
+  .section-{{ section.id }}-padding .facet-filters.sorting {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    order: 2;
+  }
+  .section-{{ section.id }}-padding .facet-filters__label {
+    margin: 0;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 13px;
+    color: #6B6A66;
+  }
+  .section-{{ section.id }}-padding .facet-filters__field .select {
+    border: none;
+  }
+  .section-{{ section.id }}-padding .facet-filters__sort {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 14px;
+    color: #1B1A18;
+    padding: 6px 24px 6px 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(27, 26, 24, 0.2);
+    background: #FAFAF7;
+  }
+  .section-{{ section.id }}-padding .product-count-vertical {
+    order: 1;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 14px;
+    color: #6B6A66;
+  }
+  .section-{{ section.id }}-padding .product-count__text {
+    margin: 0;
+    font-weight: 400;
+  }
 
-.section-{{ section.id }}-padding .card--card {
-  background-color: #ffffff;
-  border: 1px solid #e6e6e6;
-  border-radius: 10px;
-  overflow: hidden;
-}
+  .section-{{ section.id }}-padding .product-grid {
+    gap: 24px 14px;
+  }
 
-.section-{{ section.id }}-padding .card__inner {
-  background-color: #ffffff;
-}
+  .section-{{ section.id }}-padding .grid__item {
+    padding: 0;
+    background: transparent;
+  }
+
+  /* Unified editorial product card: image and info are one
+     continuous block, no gap/border/shadow between them. */
+  .section-{{ section.id }}-padding .mujo-pc {
+    display: block;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .section-{{ section.id }}-padding .mujo-pc-media {
+    position: relative;
+    overflow: hidden;
+    background-color: #E5E2D9;
+    aspect-ratio: 4 / 5;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-media-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    transition: opacity 0.4s ease;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-image-secondary {
+    opacity: 0;
+  }
+
+  .section-{{ section.id }}-padding .mujo-pc-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      to top,
+      rgba(250, 250, 247, 0.96) 0%,
+      rgba(250, 250, 247, 0.82) 30%,
+      rgba(250, 250, 247, 0) 62%
+    );
+    pointer-events: none;
+  }
+
+  .section-{{ section.id }}-padding .mujo-pc-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    background: #C9A7E8;
+    color: #1B1A18;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 2px;
+  }
+
+  .section-{{ section.id }}-padding .mujo-pc-info {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    padding: 16px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-title {
+    font-family: 'Urbanist', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+    color: #1B1A18;
+    text-decoration: none;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-subtitle {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 12px;
+    line-height: 1.1;
+    color: #B27BCF;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-price {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1B1A18;
+    margin-top: 2px;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-price-sale {
+    color: #1B1A18;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-price-compare {
+    color: #8A8579;
+    margin-left: 4px;
+  }
+
+  .section-{{ section.id }}-padding .mujo-pc-swatches {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-swatch {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border-radius: 50%;
+    position: relative;
+    border: 1.5px solid rgba(27, 26, 24, 0.25);
+    background-color: #E5E2D9;
+    cursor: pointer;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-swatch.is-selected::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 1.5px solid #1B1A18;
+    border-radius: 50%;
+  }
+
+  /* Add to Bag: small icon button anchored top-right of the image.
+     Revealed on hover on desktop; always visible on touch devices. */
+  .section-{{ section.id }}-padding .mujo-pc-add-to-bag-wrap {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 3;
+    margin: 0;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-form {
+    margin: 0;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-add-to-bag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-add-to-bag:hover {
+    transform: translateY(0) scale(1.08);
+  }
+  .section-{{ section.id }}-padding .mujo-pc-add-to-bag:disabled {
+    opacity: 0.35 !important;
+    cursor: default;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-add-to-bag-icon {
+    display: flex;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+  }
+  .section-{{ section.id }}-padding .mujo-pc-add-to-bag .loading__spinner {
+    display: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .section-{{ section.id }}-padding .mujo-pc:hover .mujo-pc-add-to-bag {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (hover: none) {
+    .section-{{ section.id }}-padding .mujo-pc-add-to-bag {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .section-{{ section.id }}-padding .mujo-pc:hover .mujo-pc-image-primary {
+      opacity: 0;
+    }
+    .section-{{ section.id }}-padding .mujo-pc:hover .mujo-pc-image-secondary {
+      opacity: 1;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .section-{{ section.id }}-padding .mujo-pc-badge {
+      font-size: 9px;
+      padding: 4px 8px;
+    }
+    .section-{{ section.id }}-padding .mujo-pc-title {
+      font-size: 13px;
+    }
+    .section-{{ section.id }}-padding .mujo-pc-subtitle {
+      font-size: 11px;
+    }
+    .section-{{ section.id }}-padding .mujo-pc-price {
+      font-size: 12px;
+    }
+    .section-{{ section.id }}-padding .mujo-pc-swatch {
+      width: 14px;
+      height: 14px;
+    }
+    .section-{{ section.id }}-padding .mujo-pc-add-to-bag {
+      width: 48px;
+      height: 48px;
+    }
+    .section-{{ section.id }}-padding .mujo-pc-add-to-bag-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
 {%- endstyle -%}
 <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
+
+  {%- assign nav_blocks = section.blocks | where: 'type', 'nav_link' -%}
+  {%- if nav_blocks.size > 0 -%}
+    <nav class="mujo-category-nav page-width" aria-label="{{ 'sections.collection_template.title' | t }}">
+      {%- for block in nav_blocks -%}
+        <a
+          href="{{ block.settings.link | default: '#' }}"
+          class="mujo-category-link{% if block.settings.link == collection.url %} is-active{% endif %}"
+          {{ block.shopify_attributes }}
+        >
+          {{ block.settings.label }}
+        </a>
+        {%- unless forloop.last -%}
+          <span class="mujo-category-sep" aria-hidden="true">·</span>
+        {%- endunless -%}
+      {%- endfor -%}
+    </nav>
+  {%- endif -%}
 
   {%- if section.settings.use_manual_products and section.blocks.size > 0 -%}
 
@@ -76,34 +458,32 @@
         class="
           grid product-grid grid--{{ section.settings.columns_mobile }}-col-tablet-down
           grid--{{ section.settings.columns_desktop }}-col-desktop
-          {% if section.settings.quick_add == 'bulk' %} collection-quick-add-bulk{% endif %}
         "
       >
-        {% assign skip_card_product_styles = false %}
-
-        {% for block in section.blocks %}
+        {%- assign product_blocks = section.blocks | where: 'type', 'product' -%}
+        {% for block in product_blocks %}
           {% assign product = all_products[block.settings.product] %}
           {% if product %}
+            {% assign lazy_load = false %}
+            {%- if forloop.index > 2 -%}
+              {%- assign lazy_load = true -%}
+            {%- endif -%}
             <li
               class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
               {% if settings.animations_reveal_on_scroll %}
                 data-cascade
                 style="--animation-order: {{ forloop.index }};"
               {% endif %}
+              {{ block.shopify_attributes }}
             >
-              {% render 'card-product',
-                card_product: product,
-                media_aspect_ratio: section.settings.image_ratio,
-                image_shape: section.settings.image_shape,
-                show_secondary_image: section.settings.show_secondary_image,
-                show_vendor: section.settings.show_vendor,
-                show_rating: section.settings.show_rating,
-                skip_styles: skip_card_product_styles,
-                quick_add: section.settings.quick_add,
-                section_id: section.id
+              {% render 'mujo-product-card',
+                product: product,
+                section_id: section.id,
+                lazy_load: lazy_load,
+                show_badge: section.settings.show_badge,
+                badge_text: section.settings.badge_text
               %}
             </li>
-            {% assign skip_card_product_styles = true %}
           {% endif %}
         {% endfor %}
       </ul>
@@ -227,10 +607,8 @@
                 class="
                   grid product-grid grid--{{ section.settings.columns_mobile }}-col-tablet-down
                   grid--{{ section.settings.columns_desktop }}-col-desktop
-                  {% if section.settings.quick_add == 'bulk' %} collection-quick-add-bulk{% endif %}
                 "
               >
-                {% assign skip_card_product_styles = false %}
                 {%- for product in collection.products -%}
                   {% assign lazy_load = false %}
                   {%- if forloop.index > 2 -%}
@@ -243,20 +621,14 @@
                       style="--animation-order: {{ forloop.index }};"
                     {% endif %}
                   >
-                    {% render 'card-product',
-                      card_product: product,
-                      media_aspect_ratio: section.settings.image_ratio,
-                      image_shape: section.settings.image_shape,
-                      show_secondary_image: section.settings.show_secondary_image,
-                      show_vendor: section.settings.show_vendor,
-                      show_rating: section.settings.show_rating,
+                    {% render 'mujo-product-card',
+                      product: product,
+                      section_id: section.id,
                       lazy_load: lazy_load,
-                      skip_styles: skip_card_product_styles,
-                      quick_add: section.settings.quick_add,
-                      section_id: section.id
+                      show_badge: section.settings.show_badge,
+                      badge_text: section.settings.badge_text
                     %}
                   </li>
-                  {%- assign skip_card_product_styles = true -%}
                 {%- endfor -%}
               </ul>
 
@@ -271,9 +643,6 @@
 
   {%- endif -%}
 
-  {% if section.settings.image_shape == 'arch' %}
-    {{ 'mask-arch.svg' | inline_asset_content }}
-  {%- endif -%}
 </div>
 
 
@@ -315,7 +684,7 @@
           "label": "t:sections.main-collection-product-grid.settings.columns_mobile.options__2.label"
         }
       ]
-    },    
+    },
     {
       "type": "color_scheme",
       "id": "color_scheme",
@@ -328,103 +697,16 @@
       "content": "t:sections.main-collection-product-grid.settings.header__3.content"
     },
     {
-      "type": "select",
-      "id": "image_ratio",
-      "options": [
-        {
-          "value": "adapt",
-          "label": "t:sections.main-collection-product-grid.settings.image_ratio.options__1.label"
-        },
-        {
-          "value": "portrait",
-          "label": "t:sections.main-collection-product-grid.settings.image_ratio.options__2.label"
-        },
-        {
-          "value": "square",
-          "label": "t:sections.main-collection-product-grid.settings.image_ratio.options__3.label"
-        }
-      ],
-      "default": "adapt",
-      "label": "t:sections.main-collection-product-grid.settings.image_ratio.label"
-    },
-    {
-      "type": "select",
-      "id": "image_shape",
-      "options": [
-        {
-          "value": "default",
-          "label": "t:sections.all.image_shape.options__1.label"
-        },
-        {
-          "value": "arch",
-          "label": "t:sections.all.image_shape.options__2.label"
-        },
-        {
-          "value": "blob",
-          "label": "t:sections.all.image_shape.options__3.label"
-        },
-        {
-          "value": "chevronleft",
-          "label": "t:sections.all.image_shape.options__4.label"
-        },
-        {
-          "value": "chevronright",
-          "label": "t:sections.all.image_shape.options__5.label"
-        },
-        {
-          "value": "diamond",
-          "label": "t:sections.all.image_shape.options__6.label"
-        },
-        {
-          "value": "parallelogram",
-          "label": "t:sections.all.image_shape.options__7.label"
-        },
-        {
-          "value": "round",
-          "label": "t:sections.all.image_shape.options__8.label"
-        }
-      ],
-      "default": "default",
-      "label": "t:sections.all.image_shape.label"
-    },
-    {
       "type": "checkbox",
-      "id": "show_secondary_image",
-      "default": false,
-      "label": "t:sections.main-collection-product-grid.settings.show_secondary_image.label"
+      "id": "show_badge",
+      "label": "Show badge on product cards",
+      "default": false
     },
     {
-      "type": "checkbox",
-      "id": "show_vendor",
-      "default": false,
-      "label": "t:sections.main-collection-product-grid.settings.show_vendor.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_rating",
-      "default": false,
-      "label": "t:sections.main-collection-product-grid.settings.show_rating.label",
-      "info": "t:sections.main-collection-product-grid.settings.show_rating.info"
-    },
-    {
-      "type": "select",
-      "id": "quick_add",
-      "default": "none",
-      "label": "t:sections.main-collection-product-grid.settings.quick_add.label",
-      "options": [
-        {
-          "value": "none",
-          "label": "t:sections.main-collection-product-grid.settings.quick_add.options.option_1"
-        },
-        {
-          "value": "standard",
-          "label": "t:sections.main-collection-product-grid.settings.quick_add.options.option_2"
-        },
-        {
-          "value": "bulk",
-          "label": "t:sections.main-collection-product-grid.settings.quick_add.options.option_3"
-        }
-      ]
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "New"
     },
     {
       "type": "header",
@@ -497,6 +779,36 @@
       "default": false,
       "label": "Use manually selected products instead of collection"
     }
- ]
+  ],
+  "blocks": [
+    {
+      "type": "nav_link",
+      "name": "Category nav link",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Category"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    },
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}
