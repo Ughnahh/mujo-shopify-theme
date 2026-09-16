@@ -1,8 +1,12 @@
 {%- doc -%}
   MUJŌ CO. — full-bleed editorial product card. The product photo
-  fills the entire card as its background; title/details/price/
-  swatches are overlaid near the bottom on a dark gradient scrim for
-  legibility.
+  fills the entire card as its background; title/subtitle/price/
+  swatches are overlaid near the bottom on a light gradient scrim
+  (title and price render in black, so the scrim runs light-to-
+  transparent rather than dark-to-transparent). The subtitle pulls
+  the product's Jewelry Material and Gemstone Type metafields
+  (shopify.jewelry-material, shopify.gemstone-type), joined with " · "
+  when both are present.
 
   Desktop hover: the image crossfades to the product's secondary
   photo (product.media[1]), and a small Add to Bag icon (bag + plus)
@@ -40,6 +44,17 @@
   endfor
   assign color_index = color_position | minus: 1
   assign form_id = 'mujo-pc-form-' | append: section_id | append: product.id
+
+  assign jewelry_material = product.metafields.shopify['jewelry-material'].value | join: ', '
+  assign gemstone_type = product.metafields.shopify['gemstone-type'].value | join: ', '
+  assign subtitle = jewelry_material
+  if gemstone_type != blank
+    if subtitle != blank
+      assign subtitle = subtitle | append: ' · ' | append: gemstone_type
+    else
+      assign subtitle = gemstone_type
+    endif
+  endif
 -%}
 
 <mujo-product-card class="mujo-pc">
@@ -122,8 +137,8 @@
 
   <div class="mujo-pc-info">
     <a href="{{ product.url }}" class="mujo-pc-title">{{ product.title | escape }}</a>
-    {%- if product.type != blank -%}
-      <div class="mujo-pc-subtitle">{{ product.type }}</div>
+    {%- if subtitle != blank -%}
+      <div class="mujo-pc-subtitle">{{ subtitle }}</div>
     {%- endif -%}
     <div class="mujo-pc-price">
       {%- if default_variant.compare_at_price > default_variant.price -%}
