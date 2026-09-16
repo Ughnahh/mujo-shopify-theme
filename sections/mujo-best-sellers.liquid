@@ -23,15 +23,34 @@
             this.selectSwatch(swatch);
           }
         });
+
+        // The secondary hover image is shown via CSS :hover, which
+        // stays active while the mouse is over a swatch (since the
+        // swatch is inside the card). Without this, a swatch click
+        // would update the primary image's src correctly but it'd
+        // stay invisible (opacity: 0 from the hover rule) until the
+        // mouse actually left and re-entered the card. Clearing the
+        // inline override on mouseleave hands control back to the
+        // normal CSS hover behavior for the next hover.
+        this.addEventListener('mouseleave', () => {
+          this.clearImageOverride();
+        });
+      }
+
+      clearImageOverride() {
+        const primary = this.querySelector('.mujo-pc-image-primary');
+        const secondary = this.querySelector('.mujo-pc-image-secondary');
+        if (primary) primary.style.opacity = '';
+        if (secondary) secondary.style.opacity = '';
       }
 
       selectSwatch(swatch) {
         const swatches = this.querySelectorAll('.mujo-pc-swatch');
         const image = this.querySelector('.mujo-pc-image-primary');
+        const secondaryImage = this.querySelector('.mujo-pc-image-secondary');
         const priceEl = this.querySelector('.mujo-pc-price');
         const variantInput = this.querySelector('.mujo-pc-variant-id');
         const addButton = this.querySelector('.mujo-pc-add-to-bag');
-        const addLabel = this.querySelector('.mujo-pc-add-to-bag-label');
 
         swatches.forEach((s) => {
           const isSelected = s === swatch;
@@ -40,12 +59,17 @@
         });
 
         const available = swatch.dataset.available === 'true';
+        const colorLabel = swatch.getAttribute('aria-label') || '';
 
         if (image && swatch.dataset.image) {
           image.src = swatch.dataset.image;
           if (swatch.dataset.imageSrcset) {
             image.srcset = swatch.dataset.imageSrcset;
           }
+          // Force the just-updated image visible right now, overriding
+          // whatever the CSS :hover rule currently has it set to.
+          image.style.opacity = '1';
+          if (secondaryImage) secondaryImage.style.opacity = '0';
         }
 
         if (variantInput) {
@@ -54,9 +78,8 @@
 
         if (addButton) {
           addButton.disabled = !available;
-        }
-        if (addLabel) {
-          addLabel.textContent = available ? 'Add to Bag' : 'Sold out';
+          const baseLabel = available ? 'Add to Bag' : 'Sold out';
+          addButton.setAttribute('aria-label', baseLabel + (colorLabel ? ' — ' + colorLabel : ''));
         }
 
         if (priceEl) {
@@ -135,12 +158,13 @@
     gap: 28px;
     list-style: none;
     margin: 0;
-    padding: 0 0 8px;
+    padding: 0 48px 8px;
   }
 
   .mujo-best-sellers-{{ section.id }} .mujo-bs-track.slider {
     overflow-x: auto;
-    scroll-padding-left: 0;
+    scroll-padding-left: 48px;
+    scroll-padding-right: 48px;
   }
 
   .mujo-best-sellers-{{ section.id }} .mujo-bs-slide {
@@ -167,6 +191,13 @@
     }
     .mujo-best-sellers-{{ section.id }} .mujo-bs-slide {
       width: 54%;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-bs-track {
+      padding: 0 20px 8px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-bs-track.slider {
+      scroll-padding-left: 20px;
+      scroll-padding-right: 20px;
     }
   }
 
@@ -275,43 +306,58 @@
     border-radius: 50%;
   }
 
-  /* Add to Bag: revealed inline between price and swatches on
-     desktop hover; always visible on touch since hover doesn't exist. */
+  /* Add to Bag: small icon button anchored top-right of the image.
+     Revealed on hover on desktop; always visible on touch devices. */
   .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag-wrap {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    margin-top: 0;
-    transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 3;
+    margin: 0;
   }
   .mujo-best-sellers-{{ section.id }} .mujo-pc-form {
     margin: 0;
   }
   .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag {
-    width: 100%;
-    padding: 11px 16px;
-    background: #EEC9FD;
-    color: #1B1A18;
-    font-family: 'Urbanist', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
     border: none;
-    border-radius: 2px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
   }
   .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag:hover {
-    background: #E2AEF9;
+    transform: translateY(0) scale(1.08);
   }
   .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag:disabled {
-    background: #E5E2D9;
-    color: #6B6862;
+    opacity: 0.35 !important;
     cursor: default;
+  }
+  .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag-icon {
+    display: flex;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
   }
   .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag .loading__spinner {
     display: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mujo-best-sellers-{{ section.id }} .mujo-pc:hover .mujo-pc-add-to-bag {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (hover: none) {
+    .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag {
+      opacity: 1;
+      transform: none;
+    }
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -320,18 +366,6 @@
     }
     .mujo-best-sellers-{{ section.id }} .mujo-pc:hover .mujo-pc-image-secondary {
       opacity: 1;
-    }
-    .mujo-best-sellers-{{ section.id }} .mujo-pc:hover .mujo-pc-add-to-bag-wrap {
-      max-height: 44px;
-      opacity: 1;
-      margin-top: 8px;
-    }
-  }
-  @media (hover: none) {
-    .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag-wrap {
-      max-height: 44px;
-      opacity: 1;
-      margin-top: 8px;
     }
   }
 
@@ -359,8 +393,12 @@
       height: 14px;
     }
     .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag {
-      padding: 9px 14px;
-      font-size: 11px;
+      width: 48px;
+      height: 48px;
+    }
+    .mujo-best-sellers-{{ section.id }} .mujo-pc-add-to-bag-icon svg {
+      width: 20px;
+      height: 20px;
     }
   }
 {%- endstyle -%}
