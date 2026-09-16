@@ -376,7 +376,7 @@
       {%- for block in nav_blocks -%}
         <a
           href="{{ block.settings.link | default: '#' }}"
-          class="mujo-category-link{% if block.settings.link == collection.url %} is-active{% endif %}"
+          class="mujo-category-link"
           {{ block.shopify_attributes }}
         >
           {{ block.settings.label }}
