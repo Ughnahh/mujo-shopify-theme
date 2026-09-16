@@ -146,19 +146,22 @@
     color: #CFCCC3;
   }
 
-  .section-{{ section.id }}-padding .product-grid {
+  .section-{{ section.id }}-padding .mujo-shop-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 24px 14px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
   @media screen and (max-width: 749px) {
-    .section-{{ section.id }}-padding .product-grid {
+    .section-{{ section.id }}-padding .mujo-shop-grid {
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 16px 8px;
     }
   }
 
-  .section-{{ section.id }}-padding .grid__item {
+  .section-{{ section.id }}-padding .mujo-shop-grid-item {
     padding: 0;
     background: transparent;
   }
@@ -397,12 +400,11 @@
   {%- endif -%}
 
   {%- paginate collections.all.products by section.settings.products_per_page -%}
-    <div class="collection page-width">
-      <div class="loading-overlay gradient"></div>
+    <div class="page-width">
       <ul
         id="product-grid"
         data-id="{{ section.id }}"
-        class="grid product-grid"
+        class="mujo-shop-grid"
       >
         {%- for product in collections.all.products -%}
           {%- assign lazy_load = false -%}
@@ -410,7 +412,7 @@
             {%- assign lazy_load = true -%}
           {%- endif -%}
           <li
-            class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            class="mujo-shop-grid-item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
             {% if settings.animations_reveal_on_scroll %}
               data-cascade
               style="--animation-order: {{ forloop.index }};"
