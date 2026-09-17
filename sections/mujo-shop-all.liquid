@@ -1,18 +1,27 @@
 {%- comment -%}
-  MUJŌ CO. — standalone "Shop All Products" page. Fully separate from
-  the homepage Best Seller / New In sections and from any collection
-  template: this only ever renders on the dedicated Page it's attached
-  to, so nothing here can affect any other page.
+  MUJŌ CO. — standalone "Shop All Products" page, redesigned as an
+  editorial catalog. Fully separate from the homepage: this only ever
+  renders on the dedicated Page it's attached to, so nothing here
+  touches the Hero, Best Sellers, Shop by Collection, or the header.
 
-  Always lists every product in the store (collections.all.products) —
-  the category nav at the top is just links out to real collections,
-  it doesn't filter this grid.
+  Card design is the same unified editorial product card finalized
+  for Best Sellers (full-bleed photo, info overlaid on a light scrim,
+  icon-only Add to Cart revealed on hover) — copied here as its own
+  scoped CSS so a change to one never touches the other.
+
+  Always lists every product in the store via collections.all,
+  referenced explicitly (not the implicit `collection` object, which
+  isn't bound on a Page) so Shopify's native sort/filter querystring
+  handling still applies. The category nav is just links out to real
+  collections — it doesn't filter this grid.
 {%- endcomment -%}
 
 {{ 'template-collection.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'component-facets.css' | asset_url | stylesheet_tag }}
 
 <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
 
 <script>
   if (!customElements.get('mujo-product-card')) {
@@ -49,7 +58,6 @@
         const priceEl = this.querySelector('.mujo-pc-price');
         const variantInput = this.querySelector('.mujo-pc-variant-id');
         const addButton = this.querySelector('.mujo-pc-add-to-bag');
-        const addLabel = this.querySelector('.mujo-pc-add-to-bag-label');
 
         swatches.forEach((s) => {
           const isSelected = s === swatch;
@@ -75,11 +83,8 @@
 
         if (addButton) {
           addButton.disabled = !available;
-          const baseLabel = available ? 'Add to Cart' : 'Sold out';
+          const baseLabel = available ? 'Add to Bag' : 'Sold out';
           addButton.setAttribute('aria-label', baseLabel + (colorLabel ? ' — ' + colorLabel : ''));
-        }
-        if (addLabel) {
-          addLabel.textContent = available ? 'Add to Cart' : 'Sold out';
         }
 
         if (priceEl) {
@@ -106,11 +111,28 @@
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
-
   @media screen and (min-width: 750px) {
     .section-{{ section.id }}-padding {
       padding-top: {{ section.settings.padding_top }}px;
       padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  /* Editorial page heading — generous whitespace on both sides */
+  .section-{{ section.id }}-padding .mujo-shop-heading {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(32px, 4vw, 48px);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-align: center;
+    color: #1B1A18;
+    margin: 0 0 40px;
+  }
+  @media screen and (max-width: 749px) {
+    .section-{{ section.id }}-padding .mujo-shop-heading {
+      margin-bottom: 28px;
     }
   }
 
@@ -146,46 +168,132 @@
     color: #CFCCC3;
   }
 
+  /* Sort + count bar — Dawn's real facets/sort markup and IDs,
+     reskinned minimal: no boxes, no borders, just quiet text and a
+     plain-underline dropdown. */
+  .section-{{ section.id }}-padding .facets-vertical-sort {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 24px;
+    padding: 0 0 16px;
+    border-bottom: 1px solid rgba(27, 26, 24, 0.1);
+    max-width: none;
+  }
+  .section-{{ section.id }}-padding .facets-vertical-form {
+    display: contents;
+  }
+  .section-{{ section.id }}-padding .facet-filters.sorting {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    order: 2;
+  }
+  .section-{{ section.id }}-padding .facet-filters__label {
+    margin: 0;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 13px;
+    color: #6B6A66;
+  }
+  .section-{{ section.id }}-padding .facet-filters__field .select {
+    border: none;
+  }
+  .section-{{ section.id }}-padding .facet-filters__sort {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 14px;
+    color: #1B1A18;
+    padding: 6px 22px 6px 2px;
+    border: none;
+    border-bottom: 1px solid rgba(27, 26, 24, 0.25);
+    background: transparent;
+  }
+  .section-{{ section.id }}-padding .product-count-vertical {
+    order: 1;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 14px;
+    color: #6B6A66;
+  }
+  .section-{{ section.id }}-padding .product-count__text {
+    margin: 0;
+    font-weight: 400;
+  }
+  .section-{{ section.id }}-padding facet-filters-form.facets-vertical-sort {
+    max-width: none;
+  }
+
+  /* Filter sidebar (only rendered when filtering is turned on) —
+     strip Dawn's boxed/bordered chrome down to plain stacked text. */
+  .section-{{ section.id }}-padding .facets-vertical {
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+  }
+  .section-{{ section.id }}-padding #main-collection-filters {
+    flex: 0 0 200px;
+  }
+  .section-{{ section.id }}-padding .facets-wrapper {
+    border: none;
+    padding: 0;
+  }
+  .section-{{ section.id }}-padding .disclosure-has-popup > summary,
+  .section-{{ section.id }}-padding .facets__summary {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #1B1A18;
+  }
+  .section-{{ section.id }}-padding .product-grid-container {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Grid — fixed columns: 4 desktop, 2 mobile, per the brief */
   .section-{{ section.id }}-padding .mujo-shop-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 24px 14px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 12px;
     list-style: none;
     margin: 0;
     padding: 0;
   }
-  @media screen and (max-width: 749px) {
+  @media screen and (min-width: 750px) and (max-width: 989px) {
     .section-{{ section.id }}-padding .mujo-shop-grid {
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 16px 8px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px 14px;
     }
   }
-
+  @media screen and (min-width: 990px) {
+    .section-{{ section.id }}-padding .mujo-shop-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 28px 16px;
+    }
+  }
   .section-{{ section.id }}-padding .mujo-shop-grid-item {
     padding: 0;
     background: transparent;
   }
 
-  /* Card: image sits in its own fixed-ratio tile on top; product
-     info always renders in normal flow directly below it — never
-     overlaid on the photo — so every card has identical proportions
-     and the text is never fighting the image for legibility. */
+  /* Unified editorial product card — identical to Best Sellers: full-
+     bleed photo, info overlaid on a light scrim, icon-only Add to
+     Cart revealed on hover. Scoped to this section only. */
   .section-{{ section.id }}-padding .mujo-pc {
     display: block;
-    height: 100%;
     text-decoration: none;
     color: inherit;
   }
 
   .section-{{ section.id }}-padding .mujo-pc-media {
     position: relative;
-  }
-  .section-{{ section.id }}-padding .mujo-pc-media-link {
-    position: relative;
-    display: block;
     overflow: hidden;
     background-color: #E5E2D9;
     aspect-ratio: 4 / 5;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-media-link {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
   .section-{{ section.id }}-padding .mujo-pc-image {
     position: absolute;
@@ -201,7 +309,16 @@
   }
 
   .section-{{ section.id }}-padding .mujo-pc-scrim {
-    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      to top,
+      rgba(250, 250, 247, 0.96) 0%,
+      rgba(250, 250, 247, 0.82) 30%,
+      rgba(250, 250, 247, 0) 62%
+    );
+    pointer-events: none;
   }
 
   .section-{{ section.id }}-padding .mujo-pc-badge {
@@ -221,16 +338,17 @@
   }
 
   .section-{{ section.id }}-padding .mujo-pc-info {
-    background: #E5E2D9;
-    padding: 12px 14px 14px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-auto-flow: row dense;
-    align-items: center;
-    gap: 3px 10px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    padding: 16px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
   }
   .section-{{ section.id }}-padding .mujo-pc-title {
-    grid-column: 1 / -1;
     font-family: 'Urbanist', sans-serif;
     font-weight: 600;
     font-size: 14px;
@@ -240,19 +358,17 @@
     text-decoration: none;
   }
   .section-{{ section.id }}-padding .mujo-pc-subtitle {
-    grid-column: 1 / -1;
     font-family: 'Urbanist', sans-serif;
     font-size: 12px;
     line-height: 1.1;
-    color: #B27BCF;
+    color: #6B6862;
   }
   .section-{{ section.id }}-padding .mujo-pc-price {
-    grid-column: 1;
     font-family: 'Urbanist', sans-serif;
     font-size: 13px;
     font-weight: 500;
     color: #1B1A18;
-    margin-top: 4px;
+    margin-top: 2px;
   }
   .section-{{ section.id }}-padding .mujo-pc-price-sale {
     color: #1B1A18;
@@ -263,8 +379,6 @@
   }
 
   .section-{{ section.id }}-padding .mujo-pc-swatches {
-    grid-column: 2;
-    justify-self: end;
     display: flex;
     gap: 8px;
     margin-top: 4px;
@@ -287,54 +401,58 @@
     border-radius: 50%;
   }
 
-  /* Add to Cart: plain transparent text below the swatches — no
-     fill, border, or box. Hidden by default, revealed on hover on
-     desktop; always visible on touch devices since hover doesn't
-     exist there. */
+  /* Add to Cart: icon button anchored top-right of the image,
+     transparent background so the photo stays visible underneath.
+     Hidden by default, revealed on hover on desktop — opacity/
+     transform only, so it never changes the card's height or shifts
+     the info below it. Always visible on touch devices. */
   .section-{{ section.id }}-padding .mujo-pc-add-to-bag-wrap {
-    grid-column: 1 / -1;
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    margin-top: 0;
-    transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 3;
+    margin: 0;
   }
   .section-{{ section.id }}-padding .mujo-pc-form {
     margin: 0;
   }
   .section-{{ section.id }}-padding .mujo-pc-add-to-bag {
-    display: inline-block;
-    font-family: 'Urbanist', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: #1B1A18;
-    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
     border: none;
-    box-shadow: none;
-    padding: 4px 0;
-    margin: 0;
-    text-decoration: underline;
-    text-underline-offset: 2px;
     cursor: pointer;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
   }
   .section-{{ section.id }}-padding .mujo-pc-add-to-bag:hover {
-    color: #6B6862;
+    transform: translateY(0) scale(1.08);
   }
   .section-{{ section.id }}-padding .mujo-pc-add-to-bag:disabled {
-    color: #B7B2A9;
+    opacity: 0.35 !important;
     cursor: default;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-add-to-bag-icon {
+    display: flex;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+  }
+  .section-{{ section.id }}-padding .mujo-pc-add-to-bag-icon svg {
+    width: 28px;
+    height: 28px;
   }
   .section-{{ section.id }}-padding .mujo-pc-add-to-bag .loading__spinner {
     display: none;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .section-{{ section.id }}-padding .mujo-pc:hover .mujo-pc-add-to-bag-wrap {
-      max-height: 28px;
+    .section-{{ section.id }}-padding .mujo-pc:hover .mujo-pc-add-to-bag {
       opacity: 1;
-      margin-top: 6px;
+      transform: translateY(0);
     }
     .section-{{ section.id }}-padding .mujo-pc:hover .mujo-pc-image-primary {
       opacity: 0;
@@ -344,10 +462,9 @@
     }
   }
   @media (hover: none) {
-    .section-{{ section.id }}-padding .mujo-pc-add-to-bag-wrap {
-      max-height: 28px;
+    .section-{{ section.id }}-padding .mujo-pc-add-to-bag {
       opacity: 1;
-      margin-top: 6px;
+      transform: none;
     }
   }
 
@@ -370,12 +487,25 @@
       height: 14px;
     }
     .section-{{ section.id }}-padding .mujo-pc-add-to-bag {
-      font-size: 11px;
+      width: 40px;
+      height: 40px;
+    }
+    .section-{{ section.id }}-padding .mujo-pc-add-to-bag-icon svg {
+      width: 24px;
+      height: 24px;
     }
   }
 {%- endstyle -%}
 
+{%- liquid
+  assign shop_collection = collections.all
+-%}
+
 <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
+
+  {%- if section.settings.heading != blank -%}
+    <h1 class="mujo-shop-heading page-width">{{ section.settings.heading }}</h1>
+  {%- endif -%}
 
   {%- assign nav_blocks = section.blocks | where: 'type', 'nav_link' -%}
   {%- if nav_blocks.size > 0 -%}
@@ -395,40 +525,97 @@
     </nav>
   {%- endif -%}
 
-  {%- paginate collections.all.products by section.settings.products_per_page -%}
-    <div class="page-width">
-      <ul
-        id="product-grid"
-        data-id="{{ section.id }}"
-        class="mujo-shop-grid"
-      >
-        {%- for product in collections.all.products -%}
-          {%- assign lazy_load = false -%}
-          {%- if forloop.index > 2 -%}
-            {%- assign lazy_load = true -%}
-          {%- endif -%}
-          <li
-            class="mujo-shop-grid-item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-            {% if settings.animations_reveal_on_scroll %}
-              data-cascade
-              style="--animation-order: {{ forloop.index }};"
-            {% endif %}
-          >
-            {% render 'mujo-product-card',
-              product: product,
-              section_id: section.id,
-              lazy_load: lazy_load,
-              show_badge: section.settings.show_badge,
-              badge_text: section.settings.badge_text,
-              add_to_cart_style: 'text'
-            %}
-          </li>
-        {%- endfor -%}
-      </ul>
+  {%- paginate shop_collection.products by section.settings.products_per_page -%}
+    {%- if section.settings.enable_sorting -%}
+      <facet-filters-form class="facets facets-vertical-sort page-width small-hide">
+        <form class="facets-vertical-form" id="FacetSortForm">
+          <div class="facet-filters sorting caption">
+            <div class="facet-filters__field">
+              <h2 class="facet-filters__label caption-large text-body">
+                <label for="SortBy">{{ 'products.facets.sort_by_label' | t }}</label>
+              </h2>
+              <div class="select">
+                {%- assign sort_by = shop_collection.sort_by | default: shop_collection.default_sort_by -%}
+                <select
+                  name="sort_by"
+                  class="facet-filters__sort select__select caption-large"
+                  id="SortBy"
+                  aria-describedby="a11y-refresh-page-message"
+                >
+                  {%- for option in shop_collection.sort_options -%}
+                    <option
+                      value="{{ option.value | escape }}"
+                      {% if option.value == sort_by %}
+                        selected="selected"
+                      {% endif %}
+                    >
+                      {{ option.name | escape }}
+                    </option>
+                  {%- endfor -%}
+                </select>
+              </div>
+            </div>
+          </div>
 
-      {%- if paginate.pages > 1 -%}
-        {% render 'pagination', paginate: paginate, anchor: '' %}
+          <div class="product-count-vertical light" role="status">
+            <h2 class="product-count__text text-body">
+              <span id="ProductCountDesktop">
+                {{ 'products.facets.product_count_simple' | t: count: shop_collection.products_count }}
+              </span>
+            </h2>
+            {%- render 'loading-spinner' -%}
+          </div>
+        </form>
+      </facet-filters-form>
+    {%- endif -%}
+
+    <div class="{% if section.settings.enable_filtering %}facets-vertical page-width{% endif %}">
+      {%- if section.settings.enable_filtering -%}
+        <aside
+          aria-labelledby="verticalTitle"
+          class="facets-wrapper"
+          id="main-collection-filters"
+          data-id="{{ section.id }}"
+        >
+          {% render 'facets',
+            results: shop_collection,
+            enable_filtering: true,
+            enable_sorting: false,
+            filter_type: 'vertical',
+            paginate: paginate
+          %}
+        </aside>
       {%- endif -%}
+
+      <div class="product-grid-container" id="ProductGridContainer">
+        <div class="{% unless section.settings.enable_filtering %}page-width{% endunless %}">
+          <ul
+            id="product-grid"
+            data-id="{{ section.id }}"
+            class="mujo-shop-grid"
+          >
+            {%- for product in shop_collection.products -%}
+              {%- assign lazy_load = false -%}
+              {%- if forloop.index > 2 -%}
+                {%- assign lazy_load = true -%}
+              {%- endif -%}
+              <li class="mujo-shop-grid-item">
+                {% render 'mujo-product-card',
+                  product: product,
+                  section_id: section.id,
+                  lazy_load: lazy_load,
+                  show_badge: section.settings.show_badge,
+                  badge_text: section.settings.badge_text
+                %}
+              </li>
+            {%- endfor -%}
+          </ul>
+
+          {%- if paginate.pages > 1 -%}
+            {% render 'pagination', paginate: paginate, anchor: '' %}
+          {%- endif -%}
+        </div>
+      </div>
     </div>
   {%- endpaginate -%}
 
@@ -439,6 +626,12 @@
   "name": "MUJŌ Shop All",
   "class": "section",
   "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop All"
+    },
     {
       "type": "range",
       "id": "products_per_page",
@@ -470,6 +663,23 @@
       "id": "badge_text",
       "label": "Badge text",
       "default": "New"
+    },
+    {
+      "type": "header",
+      "content": "Sorting and filtering"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "label": "Enable sorting",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_filtering",
+      "label": "Enable filtering",
+      "info": "Adds a filter sidebar. Off by default to keep the page light.",
+      "default": false
     },
     {
       "type": "header",
