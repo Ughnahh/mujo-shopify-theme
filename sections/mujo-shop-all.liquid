@@ -221,12 +221,16 @@
   }
 
   .section-{{ section.id }}-padding .mujo-pc-info {
-    padding: 12px 2px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+    background: #E5E2D9;
+    padding: 12px 14px 14px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-auto-flow: row dense;
+    align-items: center;
+    gap: 3px 10px;
   }
   .section-{{ section.id }}-padding .mujo-pc-title {
+    grid-column: 1 / -1;
     font-family: 'Urbanist', sans-serif;
     font-weight: 600;
     font-size: 14px;
@@ -236,17 +240,19 @@
     text-decoration: none;
   }
   .section-{{ section.id }}-padding .mujo-pc-subtitle {
+    grid-column: 1 / -1;
     font-family: 'Urbanist', sans-serif;
     font-size: 12px;
     line-height: 1.1;
     color: #B27BCF;
   }
   .section-{{ section.id }}-padding .mujo-pc-price {
+    grid-column: 1;
     font-family: 'Urbanist', sans-serif;
     font-size: 13px;
     font-weight: 500;
     color: #1B1A18;
-    margin-top: 2px;
+    margin-top: 4px;
   }
   .section-{{ section.id }}-padding .mujo-pc-price-sale {
     color: #1B1A18;
@@ -257,6 +263,8 @@
   }
 
   .section-{{ section.id }}-padding .mujo-pc-swatches {
+    grid-column: 2;
+    justify-self: end;
     display: flex;
     gap: 8px;
     margin-top: 4px;
@@ -284,6 +292,7 @@
      desktop; always visible on touch devices since hover doesn't
      exist there. */
   .section-{{ section.id }}-padding .mujo-pc-add-to-bag-wrap {
+    grid-column: 1 / -1;
     max-height: 0;
     opacity: 0;
     overflow: hidden;
