@@ -166,8 +166,10 @@
     background: transparent;
   }
 
-  /* Unified editorial product card: image and info are one
-     continuous block, no gap/border/shadow between them. */
+  /* Card: image sits in its own fixed-ratio tile on top; product
+     info always renders in normal flow directly below it — never
+     overlaid on the photo — so every card has identical proportions
+     and the text is never fighting the image for legibility. */
   .section-{{ section.id }}-padding .mujo-pc {
     display: block;
     height: 100%;
@@ -177,14 +179,13 @@
 
   .section-{{ section.id }}-padding .mujo-pc-media {
     position: relative;
+  }
+  .section-{{ section.id }}-padding .mujo-pc-media-link {
+    position: relative;
+    display: block;
     overflow: hidden;
     background-color: #E5E2D9;
     aspect-ratio: 4 / 5;
-  }
-  .section-{{ section.id }}-padding .mujo-pc-media-link {
-    display: block;
-    width: 100%;
-    height: 100%;
   }
   .section-{{ section.id }}-padding .mujo-pc-image {
     position: absolute;
@@ -200,16 +201,7 @@
   }
 
   .section-{{ section.id }}-padding .mujo-pc-scrim {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(
-      to top,
-      rgba(250, 250, 247, 0.96) 0%,
-      rgba(250, 250, 247, 0.82) 30%,
-      rgba(250, 250, 247, 0) 62%
-    );
-    pointer-events: none;
+    display: none;
   }
 
   .section-{{ section.id }}-padding .mujo-pc-badge {
@@ -229,12 +221,7 @@
   }
 
   .section-{{ section.id }}-padding .mujo-pc-info {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 2;
-    padding: 16px 14px 14px;
+    padding: 12px 2px 0;
     display: flex;
     flex-direction: column;
     gap: 3px;
