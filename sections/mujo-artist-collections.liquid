@@ -1,256 +1,318 @@
 {%- comment -%}
-  MUJŌ CO. — Artist Collections: editorial split-screen artist
-  directory + featured collection. NOT a carousel and NOT a product
-  grid — an interactive tab pattern (vertical list on desktop,
-  horizontal scroll strip on mobile) where picking an artist swaps
-  which of their Shopify collections is shown large on the other
-  side, with a small strip of that collection's own product photos
-  as a taste of what's inside (no titles, no prices — just images).
+  MUJŌ CO. — Shop by Artist: editorial split layout. Artist names are
+  stacked on the left; hovering (or focusing, for keyboard users; or
+  tapping, on touch) one crossfades in 4 products from that artist's
+  Shopify collection on the right, in a 2x2 grid. Before any hover,
+  the right side shows a merchant-chosen default image — never a
+  specific artist by default. One single "Explore Collection" CTA for
+  the whole section, not per artist.
 
-  Self-contained: its own scoped styles/markup/script, one Shopify
-  section instance per page. Does not touch Best Sellers, Hero, Shop
-  All, the header, or any other section.
+  Uses the same mujo-product-card snippet as Best Sellers/New In, with
+  swatches and Add to Cart suppressed (swatches via scoped CSS, Add to
+  Cart by passing add_to_cart_style: 'none', a value the snippet
+  doesn't recognize so neither of its button variants render) — kept
+  purely as a photo + name + price preview.
+
+  Self-contained: its own scoped styles/markup/script. Does not touch
+  Best Sellers, New In, Hero, Shop All, the header, or any other
+  section.
 {%- endcomment -%}
+
+{{ 'template-collection.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
 
 {%- style -%}
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&family=Urbanist:wght@400;500;600&display=swap');
 
-  .mujo-ac-{{ section.id }} {
+  .mujo-sba-{{ section.id }} {
     background: #FAFAF7;
-    padding: 72px 0;
+    padding: 80px 0;
   }
 
-  .mujo-ac-{{ section.id }} .mujo-ac-inner {
+  .mujo-sba-{{ section.id }} .mujo-sba-inner {
     max-width: 1440px;
     margin: 0 auto;
     padding: 0 5vw;
   }
 
-  .mujo-ac-{{ section.id }} .mujo-ac-heading {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    font-weight: 400;
-    font-size: clamp(28px, 3vw, 40px);
-    color: #1B1A18;
-    margin: 0 0 40px;
-  }
-
-  /* Desktop: 30/70 split */
-  .mujo-ac-{{ section.id }} .mujo-ac-layout {
+  .mujo-sba-{{ section.id }} .mujo-sba-layout {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 32px;
   }
 
   @media screen and (min-width: 990px) {
-    .mujo-ac-{{ section.id }} .mujo-ac-layout {
+    .mujo-sba-{{ section.id }} .mujo-sba-layout {
       grid-template-columns: 30% 1fr;
-      gap: 56px;
-      align-items: stretch;
+      gap: 64px;
+      align-items: center;
     }
   }
 
-  /* Artist selector — editorial list, not buttons */
-  .mujo-ac-{{ section.id }} .mujo-ac-nav {
+  /* Left: eyebrow label + editorial artist list */
+  .mujo-sba-{{ section.id }} .mujo-sba-eyebrow {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #6B6862;
+    margin: 0 0 20px;
+  }
+
+  .mujo-sba-{{ section.id }} .mujo-sba-nav {
     display: flex;
     flex-direction: row;
-    gap: 20px;
+    gap: 22px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding-bottom: 4px;
-    border-bottom: 1px solid rgba(27, 26, 24, 0.1);
+    padding-bottom: 6px;
   }
-  .mujo-ac-{{ section.id }} .mujo-ac-nav::-webkit-scrollbar {
+  .mujo-sba-{{ section.id }} .mujo-sba-nav::-webkit-scrollbar {
     display: none;
   }
 
   @media screen and (min-width: 990px) {
-    .mujo-ac-{{ section.id }} .mujo-ac-nav {
+    .mujo-sba-{{ section.id }} .mujo-sba-nav {
       flex-direction: column;
-      gap: 4px;
+      gap: 22px;
       overflow-x: visible;
-      border-bottom: none;
       padding-bottom: 0;
     }
   }
 
-  .mujo-ac-{{ section.id }} .mujo-ac-tab {
+  .mujo-sba-{{ section.id }} .mujo-sba-tab {
     flex: 0 0 auto;
     appearance: none;
     background: none;
     border: none;
     cursor: pointer;
     text-align: left;
-    font-family: 'Urbanist', sans-serif;
-    font-size: 15px;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
     font-weight: 400;
-    letter-spacing: 0.02em;
+    font-size: 20px;
     color: #6B6862;
-    padding: 10px 2px;
+    padding: 2px 2px 6px;
     position: relative;
-    transition: color 0.2s ease, font-weight 0.2s ease;
+    transition: color 0.2s ease;
   }
-  .mujo-ac-{{ section.id }} .mujo-ac-tab::before {
+  .mujo-sba-{{ section.id }} .mujo-sba-tab::after {
     content: '';
     position: absolute;
     left: 2px;
     right: 2px;
-    bottom: 4px;
+    bottom: 0;
     height: 1px;
     background: #1B1A18;
     transform: scaleX(0);
     transform-origin: left;
-    transition: transform 0.25s ease;
+    transition: transform 0.3s ease;
   }
-  .mujo-ac-{{ section.id }} .mujo-ac-tab:hover {
+  .mujo-sba-{{ section.id }} .mujo-sba-tab:hover,
+  .mujo-sba-{{ section.id }} .mujo-sba-tab:focus-visible {
     color: #1B1A18;
   }
-  .mujo-ac-{{ section.id }} .mujo-ac-tab:focus-visible {
+  .mujo-sba-{{ section.id }} .mujo-sba-tab:focus-visible {
     outline: 1px solid #1B1A18;
-    outline-offset: 3px;
+    outline-offset: 4px;
   }
-  .mujo-ac-{{ section.id }} .mujo-ac-tab.is-active {
+  .mujo-sba-{{ section.id }} .mujo-sba-tab.is-active {
     color: #1B1A18;
     font-weight: 600;
-    letter-spacing: 0.04em;
   }
-  .mujo-ac-{{ section.id }} .mujo-ac-tab.is-active::before {
+  .mujo-sba-{{ section.id }} .mujo-sba-tab.is-active::after {
     transform: scaleX(1);
   }
 
   @media screen and (min-width: 990px) {
-    .mujo-ac-{{ section.id }} .mujo-ac-tab {
-      font-size: 18px;
-      padding: 14px 0 14px 18px;
-    }
-    .mujo-ac-{{ section.id }} .mujo-ac-tab::before {
-      left: 0;
-      right: auto;
-      top: 14px;
-      bottom: 14px;
-      height: auto;
-      width: 2px;
-      transform: scaleY(0);
-      transform-origin: top;
-    }
-    .mujo-ac-{{ section.id }} .mujo-ac-tab.is-active::before {
-      transform: scaleY(1);
+    .mujo-sba-{{ section.id }} .mujo-sba-tab {
+      font-size: 26px;
     }
   }
 
-  /* Featured collection stage */
-  .mujo-ac-{{ section.id }} .mujo-ac-stage {
+  /* Right: fixed-shape stage, panels crossfade in place */
+  .mujo-sba-{{ section.id }} .mujo-sba-stage {
     position: relative;
+    aspect-ratio: 1 / 1;
+    background-color: #E5E2D9;
   }
 
-  .mujo-ac-{{ section.id }} .mujo-ac-panel {
-    display: grid;
-    gap: 20px;
+  .mujo-sba-{{ section.id }} .mujo-sba-panel {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.45s ease;
   }
-  .mujo-ac-{{ section.id }} .mujo-ac-panel[hidden] {
-    display: none;
+  .mujo-sba-{{ section.id }} .mujo-sba-panel.is-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
-  .mujo-ac-{{ section.id }} .mujo-ac-media {
+  .mujo-sba-{{ section.id }} .mujo-sba-default {
     display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .mujo-sba-{{ section.id }} .mujo-sba-default img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .mujo-sba-{{ section.id }} .mujo-sba-default-label {
+    position: absolute;
+    left: 20px;
+    bottom: 20px;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #FAFAF7;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  .mujo-sba-{{ section.id }} .mujo-sba-products {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 2px;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Product preview card — same visual language as Best Sellers, with
+     swatches and Add to Cart stripped out for a quiet catalog-preview
+     feel. */
+  .mujo-sba-{{ section.id }} .mujo-pc {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+  }
+  .mujo-sba-{{ section.id }} .mujo-pc-media {
     position: relative;
     overflow: hidden;
+    width: 100%;
+    height: 100%;
     background-color: #E5E2D9;
-    aspect-ratio: 16 / 10;
   }
-  .mujo-ac-{{ section.id }} .mujo-ac-media img {
+  .mujo-sba-{{ section.id }} .mujo-pc-media-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .mujo-sba-{{ section.id }} .mujo-pc-image {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s ease;
+    object-position: top center;
+    transition: opacity 0.4s ease;
   }
-  .mujo-ac-{{ section.id }} .mujo-ac-media:hover img {
-    transform: scale(1.03);
+  .mujo-sba-{{ section.id }} .mujo-pc-image-secondary {
+    opacity: 0;
   }
-
-  .mujo-ac-{{ section.id }} .mujo-ac-content {
+  .mujo-sba-{{ section.id }} .mujo-pc-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      to top,
+      rgba(250, 250, 247, 0.94) 0%,
+      rgba(250, 250, 247, 0.7) 26%,
+      rgba(250, 250, 247, 0) 55%
+    );
+    pointer-events: none;
+  }
+  .mujo-sba-{{ section.id }} .mujo-pc-badge {
+    display: none;
+  }
+  .mujo-sba-{{ section.id }} .mujo-pc-info {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    padding: 10px 12px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 2px;
   }
-  .mujo-ac-{{ section.id }} .mujo-ac-collection-name {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    font-weight: 400;
-    font-size: clamp(22px, 2.4vw, 30px);
-    color: #1B1A18;
-    margin: 0;
-  }
-  .mujo-ac-{{ section.id }} .mujo-ac-desc {
+  .mujo-sba-{{ section.id }} .mujo-pc-title {
     font-family: 'Urbanist', sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #6B6862;
-    margin: 0;
-    max-width: 46em;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.15;
+    color: #1B1A18;
+    text-decoration: none;
   }
-  .mujo-ac-{{ section.id }} .mujo-ac-shop-link {
+  .mujo-sba-{{ section.id }} .mujo-pc-subtitle {
+    display: none;
+  }
+  .mujo-sba-{{ section.id }} .mujo-pc-price {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: #6B6862;
+    margin-top: 1px;
+  }
+  .mujo-sba-{{ section.id }} .mujo-pc-swatches,
+  .mujo-sba-{{ section.id }} .mujo-pc-add-to-bag-wrap {
+    display: none !important;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mujo-sba-{{ section.id }} .mujo-pc:hover .mujo-pc-image-primary {
+      opacity: 0;
+    }
+    .mujo-sba-{{ section.id }} .mujo-pc:hover .mujo-pc-image-secondary {
+      opacity: 1;
+    }
+  }
+
+  /* Single section-wide CTA */
+  .mujo-sba-{{ section.id }} .mujo-sba-cta-row {
+    margin-top: 40px;
+    text-align: center;
+  }
+  .mujo-sba-{{ section.id }} .mujo-sba-cta {
     font-family: 'Urbanist', sans-serif;
     font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: #1B1A18;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     border-bottom: 1px solid #1B1A18;
-    padding-bottom: 2px;
-    width: fit-content;
+    padding-bottom: 3px;
     transition: opacity 0.2s ease;
   }
-  .mujo-ac-{{ section.id }} .mujo-ac-shop-link:hover {
+  .mujo-sba-{{ section.id }} .mujo-sba-cta:hover {
     opacity: 0.6;
   }
 
-  /* Small taste-of-the-collection strip — plain images, no card
-     chrome, no names, no prices. */
-  .mujo-ac-{{ section.id }} .mujo-ac-thumbs {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-top: 6px;
-    max-width: 420px;
-  }
-  .mujo-ac-{{ section.id }} .mujo-ac-thumb {
-    display: block;
-    position: relative;
-    overflow: hidden;
-    background-color: #E5E2D9;
-    aspect-ratio: 1 / 1;
-  }
-  .mujo-ac-{{ section.id }} .mujo-ac-thumb img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
   @media screen and (max-width: 749px) {
-    .mujo-ac-{{ section.id }} {
+    .mujo-sba-{{ section.id }} {
       padding: 48px 0;
     }
-    .mujo-ac-{{ section.id }} .mujo-ac-inner {
+    .mujo-sba-{{ section.id }} .mujo-sba-inner {
       padding: 0 24px;
     }
-    .mujo-ac-{{ section.id }} .mujo-ac-heading {
-      margin-bottom: 24px;
+    .mujo-sba-{{ section.id }} .mujo-sba-tab {
+      font-size: 17px;
     }
-    .mujo-ac-{{ section.id }} .mujo-ac-media {
-      aspect-ratio: 4 / 5;
-    }
-    .mujo-ac-{{ section.id }} .mujo-ac-thumbs {
-      max-width: none;
+    .mujo-sba-{{ section.id }} .mujo-sba-cta-row {
+      margin-top: 32px;
     }
   }
 {%- endstyle -%}
@@ -259,91 +321,91 @@
   assign artist_blocks = section.blocks | where: 'type', 'artist'
 -%}
 
-<div class="mujo-ac-{{ section.id }}" id="ArtistCollections-{{ section.id }}">
-  <div class="mujo-ac-inner">
-    {%- if section.settings.heading != blank -%}
-      <h2 class="mujo-ac-heading">{{ section.settings.heading }}</h2>
-    {%- endif -%}
+<div class="mujo-sba-{{ section.id }}" id="ShopByArtist-{{ section.id }}">
+  <div class="mujo-sba-inner">
+    <div class="mujo-sba-layout">
+      <div>
+        {%- if section.settings.heading != blank -%}
+          <p class="mujo-sba-eyebrow">{{ section.settings.heading }}</p>
+        {%- endif -%}
 
-    {%- if artist_blocks.size > 0 -%}
-      <div class="mujo-ac-layout">
-        <div class="mujo-ac-nav" role="tablist" aria-orientation="vertical" aria-label="{{ section.settings.heading | default: 'Artist collections' }}">
-          {%- for block in artist_blocks -%}
-            <button
-              type="button"
-              role="tab"
-              id="mujo-ac-tab-{{ section.id }}-{{ forloop.index0 }}"
-              class="mujo-ac-tab{% if forloop.first %} is-active{% endif %}"
-              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
-              aria-controls="mujo-ac-panel-{{ section.id }}-{{ forloop.index0 }}"
-              tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
-              data-mujo-ac-tab="{{ forloop.index0 }}"
-              {{ block.shopify_attributes }}
-            >
-              {{ block.settings.artist_name | default: 'Artist' }}
-            </button>
-          {%- endfor -%}
+        {%- if artist_blocks.size > 0 -%}
+          <div class="mujo-sba-nav" role="tablist" aria-orientation="vertical" aria-label="{{ section.settings.heading | default: 'Shop by artist' }}">
+            {%- for block in artist_blocks -%}
+              <button
+                type="button"
+                role="tab"
+                id="mujo-sba-tab-{{ section.id }}-{{ forloop.index0 }}"
+                class="mujo-sba-tab"
+                aria-selected="false"
+                aria-controls="mujo-sba-panel-{{ section.id }}-{{ forloop.index0 }}"
+                tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+                data-mujo-sba-tab="{{ forloop.index0 }}"
+                {{ block.shopify_attributes }}
+              >
+                {{ block.settings.artist_name | default: 'Artist' }}
+              </button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="mujo-sba-stage" aria-live="polite">
+        <div
+          class="mujo-sba-panel is-active"
+          data-mujo-sba-default
+        >
+          {%- if section.settings.default_image -%}
+            <span class="mujo-sba-default">
+              <img
+                src="{{ section.settings.default_image | image_url: width: 1200 }}"
+                srcset="{{ section.settings.default_image | image_url: width: 600 }} 600w, {{ section.settings.default_image | image_url: width: 900 }} 900w, {{ section.settings.default_image | image_url: width: 1200 }} 1200w"
+                sizes="(max-width: 989px) 100vw, 68vw"
+                loading="eager"
+                alt="{{ section.settings.default_image.alt | default: section.settings.heading | escape }}"
+                width="1200"
+                height="1200"
+              >
+            </span>
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <span class="mujo-sba-default-label">{{ section.settings.heading }}</span>
+          {%- endif -%}
         </div>
 
-        <div class="mujo-ac-stage">
-          {%- for block in artist_blocks -%}
-            {%- assign artist_collection = block.settings.collection -%}
-            <div
-              id="mujo-ac-panel-{{ section.id }}-{{ forloop.index0 }}"
-              class="mujo-ac-panel{% if forloop.first %} is-active{% endif %}"
-              role="tabpanel"
-              aria-labelledby="mujo-ac-tab-{{ section.id }}-{{ forloop.index0 }}"
-              data-mujo-ac-panel="{{ forloop.index0 }}"
-              {% unless forloop.first %}hidden{% endunless %}
-              tabindex="0"
-            >
-              <a href="{{ artist_collection.url | default: '#' }}" class="mujo-ac-media" aria-label="{{ artist_collection.title | default: block.settings.artist_name | escape }}">
-                {%- if artist_collection.featured_image -%}
-                  <img
-                    src="{{ artist_collection.featured_image | image_url: width: 1600 }}"
-                    srcset="{{ artist_collection.featured_image | image_url: width: 800 }} 800w, {{ artist_collection.featured_image | image_url: width: 1200 }} 1200w, {{ artist_collection.featured_image | image_url: width: 1600 }} 1600w"
-                    sizes="(max-width: 989px) 100vw, 68vw"
-                    loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
-                    alt="{{ artist_collection.featured_image.alt | default: artist_collection.title | escape }}"
-                    width="1600"
-                    height="1000"
-                  >
-                {%- endif -%}
-              </a>
-
-              <div class="mujo-ac-content">
-                <h3 class="mujo-ac-collection-name">
-                  {{ artist_collection.title | default: block.settings.artist_name }}
-                </h3>
-                {%- if block.settings.description != blank -%}
-                  <p class="mujo-ac-desc">{{ block.settings.description }}</p>
-                {%- endif -%}
-                <a href="{{ artist_collection.url | default: '#' }}" class="mujo-ac-shop-link">
-                  {{ section.settings.shop_label | default: 'Shop Collection' }}
-                  <span aria-hidden="true">→</span>
-                </a>
-
-                {%- if artist_collection.products.size > 0 -%}
-                  <div class="mujo-ac-thumbs" aria-hidden="true">
-                    {%- for product in artist_collection.products limit: 4 -%}
-                      <span class="mujo-ac-thumb">
-                        {%- if product.featured_image -%}
-                          <img
-                            src="{{ product.featured_image | image_url: width: 300 }}"
-                            loading="lazy"
-                            alt=""
-                            width="300"
-                            height="300"
-                          >
-                        {%- endif -%}
-                      </span>
-                    {%- endfor -%}
-                  </div>
-                {%- endif -%}
+        {%- for block in artist_blocks -%}
+          {%- assign artist_collection = block.settings.collection -%}
+          <div
+            id="mujo-sba-panel-{{ section.id }}-{{ forloop.index0 }}"
+            class="mujo-sba-panel"
+            role="tabpanel"
+            aria-labelledby="mujo-sba-tab-{{ section.id }}-{{ forloop.index0 }}"
+            data-mujo-sba-panel="{{ forloop.index0 }}"
+          >
+            {%- if artist_collection.products.size > 0 -%}
+              <div class="mujo-sba-products">
+                {%- for product in artist_collection.products limit: 4 -%}
+                  {% render 'mujo-product-card',
+                    product: product,
+                    section_id: section.id,
+                    lazy_load: true,
+                    show_badge: false,
+                    add_to_cart_style: 'none'
+                  %}
+                {%- endfor -%}
               </div>
-            </div>
-          {%- endfor -%}
-        </div>
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    {%- if section.settings.explore_link != blank -%}
+      <div class="mujo-sba-cta-row">
+        <a href="{{ section.settings.explore_link }}" class="mujo-sba-cta">
+          {{ section.settings.explore_label | default: 'Explore Collection' }}
+          <span aria-hidden="true">→</span>
+        </a>
       </div>
     {%- endif -%}
   </div>
@@ -351,44 +413,39 @@
 
 <script>
   (function () {
-    var root = document.getElementById('ArtistCollections-{{ section.id }}');
+    var root = document.getElementById('ShopByArtist-{{ section.id }}');
     if (!root) return;
 
-    var tabs = Array.prototype.slice.call(root.querySelectorAll('[data-mujo-ac-tab]'));
-    var panels = Array.prototype.slice.call(root.querySelectorAll('[data-mujo-ac-panel]'));
-    if (!tabs.length || !panels.length) return;
+    var nav = root.querySelector('.mujo-sba-nav');
+    var tabs = Array.prototype.slice.call(root.querySelectorAll('[data-mujo-sba-tab]'));
+    var panels = Array.prototype.slice.call(root.querySelectorAll('[data-mujo-sba-panel]'));
+    var defaultPanel = root.querySelector('[data-mujo-sba-default]');
+    if (!nav || !tabs.length || !panels.length || !defaultPanel) return;
 
-    function activate(index, options) {
-      var focusTab = !options || options.focusTab !== false;
-
+    function show(index) {
       tabs.forEach(function (tab, i) {
-        var isActive = i === index;
+        var isActive = index !== null && i === index;
         tab.classList.toggle('is-active', isActive);
         tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
-        tab.setAttribute('tabindex', isActive ? '0' : '-1');
       });
 
       panels.forEach(function (panel, i) {
-        var isActive = i === index;
-        panel.classList.toggle('is-active', isActive);
-        if (isActive) {
-          panel.removeAttribute('hidden');
-          var lazyImg = panel.querySelector('img[loading="lazy"]');
-          if (lazyImg && lazyImg.dataset.mujoAcLoaded !== 'true') {
-            lazyImg.loading = 'eager';
-            lazyImg.dataset.mujoAcLoaded = 'true';
-          }
-        } else {
-          panel.setAttribute('hidden', '');
-        }
+        panel.classList.toggle('is-active', index !== null && i === index);
       });
 
-      if (focusTab) tabs[index].focus();
+      defaultPanel.classList.toggle('is-active', index === null);
     }
 
     tabs.forEach(function (tab, i) {
-      tab.addEventListener('click', function () {
-        activate(i, { focusTab: false });
+      tab.addEventListener('mouseenter', function () {
+        show(i);
+      });
+      tab.addEventListener('focus', function () {
+        show(i);
+      });
+      tab.addEventListener('click', function (event) {
+        event.preventDefault();
+        show(i);
       });
 
       tab.addEventListener('keydown', function (event) {
@@ -415,30 +472,59 @@
         }
 
         event.preventDefault();
-        activate(nextIndex);
+        tabs[nextIndex].focus();
       });
+    });
+
+    nav.addEventListener('mouseleave', function () {
+      show(null);
+    });
+
+    nav.addEventListener('focusout', function (event) {
+      if (!nav.contains(event.relatedTarget)) {
+        show(null);
+      }
     });
   })();
 </script>
 
 {% schema %}
 {
-  "name": "Artist Collections",
+  "name": "Shop by Artist",
   "tag": "section",
-  "class": "section mujo-artist-collections-section",
+  "class": "section mujo-shop-by-artist-section",
   "max_blocks": 7,
   "settings": [
     {
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "Artist Collections"
+      "default": "Shop by Artist"
+    },
+    {
+      "type": "header",
+      "content": "Default preview (shown before hover)"
+    },
+    {
+      "type": "image_picker",
+      "id": "default_image",
+      "label": "Default image"
+    },
+    {
+      "type": "header",
+      "content": "Explore Collection CTA"
+    },
+    {
+      "type": "url",
+      "id": "explore_link",
+      "label": "Link",
+      "info": "Usually your Artist Collections page"
     },
     {
       "type": "text",
-      "id": "shop_label",
+      "id": "explore_label",
       "label": "Link text",
-      "default": "Shop Collection"
+      "default": "Explore Collection"
     }
   ],
   "blocks": [
@@ -456,18 +542,13 @@
           "type": "collection",
           "id": "collection",
           "label": "Collection"
-        },
-        {
-          "type": "textarea",
-          "id": "description",
-          "label": "Description (optional)"
         }
       ]
     }
   ],
   "presets": [
     {
-      "name": "Artist Collections",
+      "name": "Shop by Artist",
       "blocks": [
         { "type": "artist", "settings": { "artist_name": "RM" } },
         { "type": "artist", "settings": { "artist_name": "Jin" } },
