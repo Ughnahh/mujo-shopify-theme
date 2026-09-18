@@ -28,7 +28,7 @@
 
   @media screen and (min-width: 900px) {
     .mujo-sba-{{ section.id }} .mujo-sba-layout {
-      grid-template-columns: 44% 56%;
+      grid-template-columns: 50% 50%;
       align-items: start;
     }
   }
@@ -80,39 +80,27 @@
     margin: 0;
   }
 
-  /* Right: scrolling list */
+  /* Right: scrolling list of large image tiles, caption below each */
   .mujo-sba-{{ section.id }} .mujo-sba-right {
-    display: flex;
-    flex-direction: column;
+    padding: 48px 6vw;
   }
 
   .mujo-sba-{{ section.id }} .mujo-sba-list {
     display: flex;
     flex-direction: column;
+    gap: 40px;
   }
 
   .mujo-sba-{{ section.id }} .mujo-sba-item {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 20px 5vw;
+    display: block;
     text-decoration: none;
     color: inherit;
-    border-bottom: 1px solid rgba(27, 26, 24, 0.1);
-    transition: background-color 0.2s ease;
-  }
-  .mujo-sba-{{ section.id }} .mujo-sba-item:hover {
-    background-color: rgba(27, 26, 24, 0.03);
-  }
-  .mujo-sba-{{ section.id }} .mujo-sba-item:first-child {
-    border-top: 1px solid rgba(27, 26, 24, 0.1);
   }
 
   .mujo-sba-{{ section.id }} .mujo-sba-item-media {
-    flex: 0 0 auto;
     position: relative;
-    width: 72px;
-    aspect-ratio: 4 / 5;
+    width: 100%;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
     background-color: #E5E2D9;
   }
@@ -122,36 +110,32 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.4s ease;
+    transition: transform 0.5s ease;
   }
   .mujo-sba-{{ section.id }} .mujo-sba-item:hover .mujo-sba-item-media img {
-    transform: scale(1.05);
+    transform: scale(1.04);
   }
 
-  .mujo-sba-{{ section.id }} .mujo-sba-item-text {
-    flex: 1;
-    min-width: 0;
+  .mujo-sba-{{ section.id }} .mujo-sba-item-caption {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 16px;
+    padding-top: 14px;
     font-family: 'Urbanist', sans-serif;
   }
   .mujo-sba-{{ section.id }} .mujo-sba-item-product {
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 400;
     color: #1B1A18;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
   .mujo-sba-{{ section.id }} .mujo-sba-item-collection {
     flex: 0 0 auto;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #6B6862;
+    color: #1B1A18;
   }
 
   @media screen and (max-width: 899px) {
@@ -160,18 +144,17 @@
       right: 20px;
       bottom: 20px;
     }
-    .mujo-sba-{{ section.id }} .mujo-sba-item {
-      padding: 16px 24px;
-      gap: 14px;
+    .mujo-sba-{{ section.id }} .mujo-sba-right {
+      padding: 32px 24px;
     }
-    .mujo-sba-{{ section.id }} .mujo-sba-item-media {
-      width: 56px;
+    .mujo-sba-{{ section.id }} .mujo-sba-list {
+      gap: 32px;
     }
     .mujo-sba-{{ section.id }} .mujo-sba-item-product {
       font-size: 13px;
     }
     .mujo-sba-{{ section.id }} .mujo-sba-item-collection {
-      font-size: 10px;
+      font-size: 11px;
     }
   }
 {%- endstyle -%}
@@ -229,15 +212,17 @@
               <span class="mujo-sba-item-media">
                 {%- if display_product.featured_image -%}
                   <img
-                    src="{{ display_product.featured_image | image_url: width: 200 }}"
+                    src="{{ display_product.featured_image | image_url: width: 900 }}"
+                    srcset="{{ display_product.featured_image | image_url: width: 500 }} 500w, {{ display_product.featured_image | image_url: width: 700 }} 700w, {{ display_product.featured_image | image_url: width: 900 }} 900w"
+                    sizes="(max-width: 899px) 92vw, 44vw"
                     loading="lazy"
                     alt=""
-                    width="200"
-                    height="250"
+                    width="900"
+                    height="900"
                   >
                 {%- endif -%}
               </span>
-              <span class="mujo-sba-item-text">
+              <span class="mujo-sba-item-caption">
                 <span class="mujo-sba-item-product">{{ display_product.title | default: 'Product' }}</span>
                 <span class="mujo-sba-item-collection">{{ artist_collection.title | default: 'Collection' }}</span>
               </span>
