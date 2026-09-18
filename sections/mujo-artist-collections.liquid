@@ -98,6 +98,7 @@
   }
 
   .mujo-sba-{{ section.id }} .mujo-sba-item-media {
+    display: block;
     position: relative;
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -198,35 +199,37 @@
         <div class="mujo-sba-list">
           {%- for block in artist_blocks -%}
             {%- assign artist_collection = block.settings.collection -%}
-            {%- if block.settings.product_source == 'manual' and block.settings.featured_product -%}
-              {%- assign display_product = block.settings.featured_product -%}
-            {%- else -%}
-              {%- assign display_product = artist_collection.products | sort: 'created_at' | last -%}
-            {%- endif -%}
+            {%- if artist_collection != blank -%}
+              {%- if block.settings.product_source == 'manual' and block.settings.featured_product -%}
+                {%- assign display_product = block.settings.featured_product -%}
+              {%- else -%}
+                {%- assign display_product = artist_collection.products | sort: 'created_at' | last -%}
+              {%- endif -%}
 
-            <a
-              href="{{ artist_collection.url | default: '#' }}"
-              class="mujo-sba-item"
-              {{ block.shopify_attributes }}
-            >
-              <span class="mujo-sba-item-media">
-                {%- if display_product.featured_image -%}
-                  <img
-                    src="{{ display_product.featured_image | image_url: width: 900 }}"
-                    srcset="{{ display_product.featured_image | image_url: width: 500 }} 500w, {{ display_product.featured_image | image_url: width: 700 }} 700w, {{ display_product.featured_image | image_url: width: 900 }} 900w"
-                    sizes="(max-width: 899px) 92vw, 44vw"
-                    loading="lazy"
-                    alt=""
-                    width="900"
-                    height="900"
-                  >
-                {%- endif -%}
-              </span>
-              <span class="mujo-sba-item-caption">
-                <span class="mujo-sba-item-product">{{ display_product.title | default: 'Product' }}</span>
-                <span class="mujo-sba-item-collection">{{ artist_collection.title | default: 'Collection' }}</span>
-              </span>
-            </a>
+              <a
+                href="{{ artist_collection.url | default: '#' }}"
+                class="mujo-sba-item"
+                {{ block.shopify_attributes }}
+              >
+                <span class="mujo-sba-item-media">
+                  {%- if display_product.featured_image -%}
+                    <img
+                      src="{{ display_product.featured_image | image_url: width: 900 }}"
+                      srcset="{{ display_product.featured_image | image_url: width: 500 }} 500w, {{ display_product.featured_image | image_url: width: 700 }} 700w, {{ display_product.featured_image | image_url: width: 900 }} 900w"
+                      sizes="(max-width: 899px) 92vw, 44vw"
+                      loading="lazy"
+                      alt=""
+                      width="900"
+                      height="900"
+                    >
+                  {%- endif -%}
+                </span>
+                <span class="mujo-sba-item-caption">
+                  <span class="mujo-sba-item-product">{{ display_product.title | default: 'Product' }}</span>
+                  <span class="mujo-sba-item-collection">{{ artist_collection.title | default: 'Collection' }}</span>
+                </span>
+              </a>
+            {%- endif -%}
           {%- endfor -%}
         </div>
       {%- endif -%}
