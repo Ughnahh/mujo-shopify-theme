@@ -102,6 +102,13 @@
     color: #FAFAF7;
     margin: 0;
   }
+  @media screen and (min-width: 900px) {
+    .mujo-sba-{{ section.id }} .mujo-sba-left-title {
+      justify-content: flex-start;
+      text-align: left;
+      padding: 0 24px 0 40px;
+    }
+  }
 
   /* Right: on mobile, sits above the background image. On desktop,
      it's the internally-scrolling half of the rectangle — the
@@ -147,16 +154,16 @@
   .mujo-sba-{{ section.id }} .mujo-sba-item {
     display: block;
     flex: 0 0 auto;
-    width: 68vw;
-    max-width: 300px;
+    width: 58vw;
+    max-width: 240px;
     scroll-snap-align: start;
     text-decoration: none;
     color: inherit;
   }
   @media screen and (min-width: 900px) {
     .mujo-sba-{{ section.id }} .mujo-sba-item {
-      width: auto;
-      max-width: none;
+      width: 100%;
+      max-width: 320px;
     }
   }
 
