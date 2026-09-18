@@ -12,11 +12,11 @@
 
   .mujo-collection-{{ section.id }} {
     background: #FAFAF7;
-    padding: 72px 0;
+    padding: 56px 0;
   }
 
   .mujo-collection-{{ section.id }} .mujo-col-inner {
-    max-width: 1440px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 0 5vw;
   }
@@ -25,15 +25,15 @@
     font-family: 'Playfair Display', serif;
     font-style: italic;
     font-weight: 400;
-    font-size: clamp(28px, 3vw, 40px);
+    font-size: clamp(26px, 2.6vw, 34px);
     color: #1B1A18;
-    margin: 0 0 40px;
+    margin: 0 0 32px;
   }
 
   .mujo-collection-{{ section.id }} .mujo-col-grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    gap: 32px 24px;
+    gap: 22px 18px;
   }
 
   .mujo-collection-{{ section.id }} .mujo-col-tile {
@@ -122,19 +122,23 @@
     color: #6B6862;
   }
 
+  /* Mobile: a proper compact 2-up grid, not the desktop collage
+     shrunk to one column — uniform, smaller portrait tiles with
+     tighter, intentional spacing. */
   @media screen and (max-width: 749px) {
     .mujo-collection-{{ section.id }} {
-      padding: 48px 0;
+      padding: 40px 0;
     }
     .mujo-collection-{{ section.id }} .mujo-col-inner {
-      padding: 0 24px;
+      padding: 0 16px;
     }
     .mujo-collection-{{ section.id }} .mujo-col-heading {
-      margin-bottom: 24px;
+      font-size: 24px;
+      margin-bottom: 18px;
     }
     .mujo-collection-{{ section.id }} .mujo-col-grid {
-      grid-template-columns: 1fr;
-      gap: 40px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px 10px;
     }
     .mujo-collection-{{ section.id }} .mujo-col-tile,
     .mujo-collection-{{ section.id }} .mujo-col-tile:nth-child(6n+1),
@@ -152,7 +156,18 @@
     .mujo-collection-{{ section.id }} .mujo-col-tile:nth-child(6n+4) .mujo-col-media,
     .mujo-collection-{{ section.id }} .mujo-col-tile:nth-child(6n+5) .mujo-col-media,
     .mujo-collection-{{ section.id }} .mujo-col-tile:nth-child(6n+6) .mujo-col-media {
-      aspect-ratio: 4 / 5;
+      aspect-ratio: 3 / 4;
+    }
+    .mujo-collection-{{ section.id }} .mujo-col-caption {
+      margin-top: 8px;
+      gap: 2px;
+    }
+    .mujo-collection-{{ section.id }} .mujo-col-name {
+      font-size: 14px;
+    }
+    .mujo-collection-{{ section.id }} .mujo-col-link {
+      font-size: 9px;
+      letter-spacing: 0.06em;
     }
   }
 {%- endstyle -%}
@@ -177,7 +192,7 @@
                 <img
                   src="{{ collection.featured_image | image_url: width: 1200 }}"
                   srcset="{{ collection.featured_image | image_url: width: 600 }} 600w, {{ collection.featured_image | image_url: width: 900 }} 900w, {{ collection.featured_image | image_url: width: 1200 }} 1200w"
-                  sizes="(max-width: 749px) 100vw, 50vw"
+                  sizes="(max-width: 749px) 46vw, 50vw"
                   loading="lazy"
                   alt="{{ collection.featured_image.alt | default: collection.title | escape }}"
                   width="1200"
