@@ -160,7 +160,7 @@
 {%- endstyle -%}
 
 {%- liquid
-  assign artist_blocks = section.blocks | where: 'type', 'item'
+  assign artist_blocks = section.blocks | where: 'type', 'artist'
 -%}
 
 <div class="mujo-sba-{{ section.id }}">
@@ -264,7 +264,7 @@
   ],
   "blocks": [
     {
-      "type": "item",
+      "type": "artist",
       "name": "Artist / Collection",
       "settings": [
         {
@@ -295,13 +295,13 @@
     {
       "name": "Shop by Artist",
       "blocks": [
-        { "type": "item" },
-        { "type": "item" },
-        { "type": "item" },
-        { "type": "item" },
-        { "type": "item" },
-        { "type": "item" },
-        { "type": "item" }
+        { "type": "artist" },
+        { "type": "artist" },
+        { "type": "artist" },
+        { "type": "artist" },
+        { "type": "artist" },
+        { "type": "artist" },
+        { "type": "artist" }
       ]
     }
   ]
