@@ -18,26 +18,31 @@
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&family=Urbanist:wght@400;500;600&display=swap');
 
   .mujo-sba-{{ section.id }} {
+    position: relative;
     background: #FAFAF7;
   }
 
   .mujo-sba-{{ section.id }} .mujo-sba-layout {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: block;
   }
 
   @media screen and (min-width: 900px) {
     .mujo-sba-{{ section.id }} .mujo-sba-layout {
+      display: grid;
       grid-template-columns: 50% 50%;
       align-items: start;
     }
   }
 
-  /* Left: static image, sticky on desktop */
+  /* Left: image panel. Desktop: sticky column with the heading
+     centered over it. Mobile: becomes the section's own background,
+     positioned relative to the section root (not the layout column)
+     so it spans the full height of the heading + card carousel. */
   .mujo-sba-{{ section.id }} .mujo-sba-left {
-    position: relative;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
     display: block;
-    aspect-ratio: 4 / 3;
     overflow: hidden;
     background-color: #E5E2D9;
     text-decoration: none;
@@ -45,9 +50,10 @@
   @media screen and (min-width: 900px) {
     .mujo-sba-{{ section.id }} .mujo-sba-left {
       position: sticky;
+      inset: auto;
       top: 0;
+      z-index: auto;
       height: 80vh;
-      aspect-ratio: auto;
     }
   }
 
@@ -62,15 +68,24 @@
   .mujo-sba-{{ section.id }} .mujo-sba-left-scrim {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 45%);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.15) 40%, rgba(0, 0, 0, 0.35) 100%);
     pointer-events: none;
   }
+  @media screen and (min-width: 900px) {
+    .mujo-sba-{{ section.id }} .mujo-sba-left-scrim {
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 45%);
+    }
+  }
 
+  /* Desktop: heading centered on the image, both axes */
   .mujo-sba-{{ section.id }} .mujo-sba-left-title {
     position: absolute;
-    left: 32px;
-    right: 32px;
-    bottom: 32px;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 32px;
     font-family: 'Playfair Display', serif;
     font-style: italic;
     font-weight: 400;
@@ -80,21 +95,56 @@
     margin: 0;
   }
 
-  /* Right: scrolling list of large image tiles, caption below each */
+  /* Right: sits above the (mobile) background image */
   .mujo-sba-{{ section.id }} .mujo-sba-right {
-    padding: 28px 5vw;
+    position: relative;
+    z-index: 1;
+    padding: 120px 5vw 28px;
+  }
+  @media screen and (min-width: 900px) {
+    .mujo-sba-{{ section.id }} .mujo-sba-right {
+      padding: 28px 5vw;
+    }
   }
 
   .mujo-sba-{{ section.id }} .mujo-sba-list {
     display: flex;
-    flex-direction: column;
-    gap: 24px;
+    flex-direction: row;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .mujo-sba-{{ section.id }} .mujo-sba-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media screen and (min-width: 900px) {
+    .mujo-sba-{{ section.id }} .mujo-sba-list {
+      flex-direction: column;
+      gap: 24px;
+      overflow-x: visible;
+      scroll-snap-type: none;
+      padding-bottom: 0;
+    }
   }
 
   .mujo-sba-{{ section.id }} .mujo-sba-item {
     display: block;
+    flex: 0 0 auto;
+    width: 68vw;
+    max-width: 300px;
+    scroll-snap-align: start;
     text-decoration: none;
     color: inherit;
+  }
+  @media screen and (min-width: 900px) {
+    .mujo-sba-{{ section.id }} .mujo-sba-item {
+      width: auto;
+      max-width: none;
+    }
   }
 
   .mujo-sba-{{ section.id }} .mujo-sba-item-media {
@@ -139,17 +189,17 @@
     color: #1B1A18;
   }
 
+  /* Mobile: heading moves to upper-center instead of centered, and
+     each card's caption gets a small solid backdrop so it stays
+     legible over whatever part of the background photo is behind it. */
   @media screen and (max-width: 899px) {
     .mujo-sba-{{ section.id }} .mujo-sba-left-title {
-      left: 20px;
-      right: 20px;
-      bottom: 20px;
+      align-items: flex-start;
+      padding: 28px 20px 0;
     }
-    .mujo-sba-{{ section.id }} .mujo-sba-right {
-      padding: 24px 20px;
-    }
-    .mujo-sba-{{ section.id }} .mujo-sba-list {
-      gap: 20px;
+    .mujo-sba-{{ section.id }} .mujo-sba-item-caption {
+      background: rgba(250, 250, 247, 0.92);
+      padding: 6px 8px;
     }
     .mujo-sba-{{ section.id }} .mujo-sba-item-product {
       font-size: 13px;
