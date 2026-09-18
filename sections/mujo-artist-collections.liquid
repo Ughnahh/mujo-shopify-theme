@@ -1,11 +1,14 @@
 {%- comment -%}
-  MUJŌ CO. — Shop by Artist: sticky-image + scrolling list layout.
-  Left side is one large static image (with an optional title overlay
-  and link) that stays pinned in view on desktop while the right side
-  — a vertical list of collections, one row per artist — scrolls past
-  it. On mobile everything stacks and nothing is sticky.
+  MUJŌ CO. — Shop by Artist: one fixed-height rectangle on desktop,
+  split into a static image (left) and an internally vertically-
+  scrolling collection list (right) — the rectangle itself never
+  grows taller as more collections are added. On mobile that same
+  composition adapts rather than stacking: the image becomes the
+  section's own full background, the heading moves to upper-center,
+  and the collection list becomes a horizontally swipeable carousel
+  over the image.
 
-  Each row shows a product photo, the product name, and the
+  Each item shows a product photo, the product name, and the
   collection/artist name, and links straight to that collection. The
   product shown is either the newest product in the collection or a
   merchant-picked featured product, per block.
@@ -26,16 +29,22 @@
     display: block;
   }
 
+  /* Desktop: one fixed-height rectangle. Both columns share this
+     height — the image fills it, the collection list scrolls inside
+     it — so the section itself never grows as more collections are
+     added. */
   @media screen and (min-width: 900px) {
     .mujo-sba-{{ section.id }} .mujo-sba-layout {
       display: grid;
       grid-template-columns: 50% 50%;
-      align-items: start;
+      align-items: stretch;
+      height: 80vh;
+      max-height: 720px;
     }
   }
 
-  /* Left: image panel. Desktop: sticky column with the heading
-     centered over it. Mobile: becomes the section's own background,
+  /* Left: image panel. Desktop: static, fills its half of the fixed-
+     height rectangle. Mobile: becomes the section's own background,
      positioned relative to the section root (not the layout column)
      so it spans the full height of the heading + card carousel. */
   .mujo-sba-{{ section.id }} .mujo-sba-left {
@@ -49,11 +58,10 @@
   }
   @media screen and (min-width: 900px) {
     .mujo-sba-{{ section.id }} .mujo-sba-left {
-      position: sticky;
+      position: static;
       inset: auto;
-      top: 0;
       z-index: auto;
-      height: 80vh;
+      height: 100%;
     }
   }
 
@@ -95,7 +103,10 @@
     margin: 0;
   }
 
-  /* Right: sits above the (mobile) background image */
+  /* Right: on mobile, sits above the background image. On desktop,
+     it's the internally-scrolling half of the rectangle — the
+     collection list scrolls inside this pane, the rectangle itself
+     stays fixed height. */
   .mujo-sba-{{ section.id }} .mujo-sba-right {
     position: relative;
     z-index: 1;
@@ -103,7 +114,9 @@
   }
   @media screen and (min-width: 900px) {
     .mujo-sba-{{ section.id }} .mujo-sba-right {
-      padding: 28px 5vw;
+      height: 100%;
+      overflow-y: auto;
+      padding: 32px;
     }
   }
 
