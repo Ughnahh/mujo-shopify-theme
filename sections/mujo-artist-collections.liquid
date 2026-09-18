@@ -37,7 +37,7 @@
   .mujo-sba-{{ section.id }} .mujo-sba-left {
     position: relative;
     display: block;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 4 / 3;
     overflow: hidden;
     background-color: #E5E2D9;
     text-decoration: none;
@@ -46,7 +46,7 @@
     .mujo-sba-{{ section.id }} .mujo-sba-left {
       position: sticky;
       top: 0;
-      height: 100vh;
+      height: 80vh;
       aspect-ratio: auto;
     }
   }
@@ -82,13 +82,13 @@
 
   /* Right: scrolling list of large image tiles, caption below each */
   .mujo-sba-{{ section.id }} .mujo-sba-right {
-    padding: 48px 6vw;
+    padding: 28px 5vw;
   }
 
   .mujo-sba-{{ section.id }} .mujo-sba-list {
     display: flex;
     flex-direction: column;
-    gap: 40px;
+    gap: 24px;
   }
 
   .mujo-sba-{{ section.id }} .mujo-sba-item {
@@ -101,7 +101,7 @@
     display: block;
     position: relative;
     width: 100%;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 3;
     overflow: hidden;
     background-color: #E5E2D9;
   }
@@ -122,7 +122,7 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 16px;
-    padding-top: 14px;
+    padding-top: 8px;
     font-family: 'Urbanist', sans-serif;
   }
   .mujo-sba-{{ section.id }} .mujo-sba-item-product {
@@ -146,10 +146,10 @@
       bottom: 20px;
     }
     .mujo-sba-{{ section.id }} .mujo-sba-right {
-      padding: 32px 24px;
+      padding: 24px 20px;
     }
     .mujo-sba-{{ section.id }} .mujo-sba-list {
-      gap: 32px;
+      gap: 20px;
     }
     .mujo-sba-{{ section.id }} .mujo-sba-item-product {
       font-size: 13px;
